@@ -1,0 +1,32 @@
+name: assignee
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+jobs:
+  assignee:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: read
+    steps:
+      # https://zenn.dev/takasp/articles/f46eab95453ed0
+      # https://github.com/actions/github-script
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        if: ${{ toJSON(github.event.pull_request.assignees) == '[]' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { number, user } = context.payload.pull_request;
+            if (user.login !== 'dependabot[bot]') {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                assignees: [user.login]
+              });
+            }
