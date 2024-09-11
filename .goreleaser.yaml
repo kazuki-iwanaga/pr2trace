@@ -44,3 +44,13 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+# https://goreleaser.com/customization/homebrew/
+brews:
+  - repository:
+      owner: kazuki-iwanaga
+      name: homebrew-tap
+      token: "{{ .Env.PAT_HOMEBREW_TAP_REPO }}"
+    homepage: "https://github.com/kazuki-iwanaga/pr2otel"
+    description: "pr2otel is a tool to convert Pull Request to OpenTelemetry-compatible telemetry."
+    license: "MIT"
