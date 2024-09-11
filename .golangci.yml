@@ -1,6 +1,8 @@
 linters:
   enable-all: true
   disable:
-    - execinquery
-    - exportloopref
-    - gomnd
+    - execinquery    # Deprecated
+    - exportloopref  # Deprecated
+    - gomnd          # Deprecated
+    - godot
+    - depguard
