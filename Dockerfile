@@ -8,8 +8,7 @@ COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
-COPY main.go ./
-COPY cmd ./
+COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 go build -o /bin/pr2otel .
 
