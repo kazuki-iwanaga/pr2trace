@@ -6,3 +6,4 @@ linters:
     - gomnd          # Deprecated
     - godot
     - depguard
+    - nolintlint
