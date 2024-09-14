@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=bind,source=.,target=. \
-    CGO_ENABLED=0 go build -o /bin/pr2otel .
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /bin/pr2otel .
 
 
 FROM gcr.io/distroless/static:nonroot
