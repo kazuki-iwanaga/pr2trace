@@ -41,3 +41,25 @@ brews:
     homepage: "https://github.com/kazuki-iwanaga/pr2otel"
     description: "pr2otel is a tool to convert Pull Request to OpenTelemetry-compatible telemetry."
     license: "MIT"
+
+# https://goreleaser.com/customization/docker/
+# https://goreleaser.com/cookbooks/multi-platform-docker-images/
+dockers:
+  - image_templates:
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+    goarch: "arm64"
+docker_manifests:
+  - name_template: "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-arm64"
