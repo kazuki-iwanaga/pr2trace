@@ -21,6 +21,7 @@ jobs:
           dockerfile: Dockerfile
       # https://github.com/hadolint/hadolint-action?tab=readme-ov-file#output
       - uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        if: ${{ steps.hadolint.outcome != 'success' }}
         with:
           script: |
             const output = `
