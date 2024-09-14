@@ -7,3 +7,5 @@ linters:
     - godot
     - depguard
     - nolintlint
+    - forbidigo
+    - gochecknoinits
