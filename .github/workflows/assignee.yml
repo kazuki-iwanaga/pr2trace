@@ -1,4 +1,5 @@
 name: assignee
+
 on:
   pull_request:
     branches:
@@ -7,6 +8,7 @@ on:
       - opened
       - reopened
       - synchronize
+
 jobs:
   assignee:
     runs-on: ubuntu-latest

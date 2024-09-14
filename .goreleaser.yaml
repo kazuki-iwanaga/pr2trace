@@ -1,19 +1,8 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
-
 version: 2
 
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
-    - go generate ./...
 
 builds:
   - env:
@@ -25,7 +14,6 @@ builds:
 
 archives:
   - format: tar.gz
-    # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
@@ -33,7 +21,6 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
     format_overrides:
       - goos: windows
         format: zip
@@ -54,3 +41,25 @@ brews:
     homepage: "https://github.com/kazuki-iwanaga/pr2otel"
     description: "pr2otel is a tool to convert Pull Request to OpenTelemetry-compatible telemetry."
     license: "MIT"
+
+# https://goreleaser.com/customization/docker/
+# https://goreleaser.com/cookbooks/multi-platform-docker-images/
+dockers:
+  - image_templates:
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+    goarch: "arm64"
+docker_manifests:
+  - name_template: "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-arm64"
