@@ -14,6 +14,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=bind,source=go.sum,target=./go.sum \
     go mod download
 
+
 FROM golang:${GO_VERSION} AS builder
 
 WORKDIR /app
@@ -26,6 +27,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=bind,source=.,target=. \
     CGO_ENABLED=0 go build -o /bin/pr2otel .
+
 
 FROM gcr.io/distroless/static:nonroot
 
