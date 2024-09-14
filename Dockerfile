@@ -4,13 +4,13 @@ FROM golang:${GO_VERSION} AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=bind,source=go.mod,target=./go.mod \
+    --mount=type=bind,source=go.sum,target=./go.sum \
     go mod download
 
-COPY main.go ./
-COPY cmd ./cmd
 RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=bind,source=.,target=. \
     CGO_ENABLED=0 go build -o /bin/pr2otel .
 
 
