@@ -41,13 +41,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: reviewdog/action-trivy@v1
+      - uses: reviewdog/action-trivy@b132df11c5708463bbeabc0f85459fe19e180e44 # v1.11.4
         with:
           trivy_command: config
           trivy_target: Dockerfile
       - run: |
           docker build -t pr2otel:${{ github.sha }} .
-      - uses: reviewdog/action-trivy@v1
+      - uses: reviewdog/action-trivy@b132df11c5708463bbeabc0f85459fe19e180e44 # v1.11.4
         with:
           trivy_command: image
           trivy_target: pr2otel:${{ github.sha }}
