@@ -41,13 +41,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: aquasecurity/trivy-action@b2933f565dbc598b29947660e66259e3c7bc8561 # 0.20.0
+      - uses: reviewdog/action-trivy@v1
         with:
-          scan-type: "config"
-          exit-code: "1"
+          trivy_command: config
+          trivy_target: Dockerfile
       - run: |
           docker build -t pr2otel:${{ github.sha }} .
-      - uses: aquasecurity/trivy-action@b2933f565dbc598b29947660e66259e3c7bc8561 # 0.20.0
+      - uses: reviewdog/action-trivy@v1
         with:
-          image-ref: "pr2otel:${{ github.sha }}"
-          exit-code: "1"
+          trivy_command: image
+          trivy_target: pr2otel:${{ github.sha }}
