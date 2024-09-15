@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -11,15 +10,12 @@ var version string = "unspecified"
 
 // nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
-	Use:   "pr2otel",
+	Use:     "pr2otel",
 	Version: version,
-	Short: "Convert GitHub Pull Request to OpenTelemetry-compatible telemetry.",
+	Short:   "Convert GitHub Pull Request to OpenTelemetry-compatible telemetry.",
 	Long: `Convert GitHub Pull Request to OpenTelemetry-compatible telemetry.
 
 [TODO] A longer description and some examples will be written here.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hello, World!")
-	},
 }
 
 func Execute() {
