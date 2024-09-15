@@ -111,8 +111,9 @@ func init() {
 	rootCmd.Flags().StringP("owner", "o", "", "Owner of the GitHub repository")
 	rootCmd.Flags().StringP("repo", "r", "", "Name of the GitHub repository")
 	rootCmd.Flags().IntP("number", "n", 1, "Number of the GitHub Pull Request")
-
 	rootCmd.MarkFlagRequired("owner")
 	rootCmd.MarkFlagRequired("repo")
 	rootCmd.MarkFlagRequired("number")
+
+	rootCmd.Flags().BoolP("enable-cli-otel", "", false, "Enable OpenTelemetry for CLI (default: false)")
 }
