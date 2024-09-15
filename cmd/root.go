@@ -30,3 +30,10 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
+func init() {
+	rootCmd.PersistentFlags().StringP("url", "u", "", "URL of the GitHub Pull Request")
+	rootCmd.PersistentFlags().StringP("owner", "o", "", "Owner of the GitHub repository")
+	rootCmd.PersistentFlags().StringP("repo", "r", "", "Name of the GitHub repository")
+	rootCmd.PersistentFlags().IntP("number", "n", 1, "Number of the GitHub Pull Request")
+}
