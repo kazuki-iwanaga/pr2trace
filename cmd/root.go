@@ -23,6 +23,5 @@ func Execute() {
 }
 
 func init() {
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pr2otel.yaml)")
 	rootCmd.Flags().StringP("pull-request-url", "p", "", "URL of the GitHub Pull Request")
 }
