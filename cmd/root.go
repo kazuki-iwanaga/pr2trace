@@ -2,8 +2,7 @@ package cmd
 
 import (
 	"context"
-	"log"
-	"log/slog"
+	"fmt"
 	"os"
 
 	"github.com/google/go-github/v64/github"
@@ -24,35 +23,33 @@ var rootCmd = &cobra.Command{
   pr2otel --owner kazuki-iwanaga --repo pr2otel --number 7`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		client := github.NewClient(nil)
 
 		owner, _ := cmd.Flags().GetString("owner")
 		repo, _ := cmd.Flags().GetString("repo")
 		number, _ := cmd.Flags().GetInt("number")
 
+		client := github.NewClient(nil)
+
 		pr, _, err := client.PullRequests.Get(ctx, owner, repo, number)
 		if err != nil {
-			log.Println(err)
+			fmt.Println(err)
 			os.Exit(1)
 		}
-		log.Println(pr.GetTitle())
+		fmt.Println(pr.GetTitle())
 
 		opt := &github.ListOptions{
 			PerPage: 100,
 		}
-
 		for {
-			events, resp, err := client.Issues.ListIssueTimeline(ctx, owner, repo, number, opt)
+			events, resp, err := client.Issues.ListIssueEvents(
+				ctx, owner, repo, number, opt)
 			if err != nil {
-				log.Fatalf("Error fetching timeline: %v", err)
-				slog.Error("Error fetching timeline %v", err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 
 			for _, event := range events {
-				slog.Info(
-					"Timeline Event Fetched.",
-					"type", event.GetEvent(),
-				)
+				fmt.Println(event.GetCreatedAt(), event.GetEvent())
 			}
 
 			if resp.NextPage == 0 {
