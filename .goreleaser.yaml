@@ -14,7 +14,9 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w
+      - -s
+      - -w
+      - -X github.com/kazuki-iwanaga/pr2otel/cmd.version={{ .Tag }}
 
 archives:
   - format: tar.gz
