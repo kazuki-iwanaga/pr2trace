@@ -2,8 +2,12 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"os/signal"
+
+	"github.com/kazuki-iwanaga/pr2otel/internal"
 
 	"github.com/google/go-github/v64/github"
 	"github.com/spf13/cobra"
@@ -22,7 +26,20 @@ var rootCmd = &cobra.Command{
 	Example: `  pr2otel --url https://github.com/kazuki-iwanaga/pr2otel/pull/7
   pr2otel --owner kazuki-iwanaga --repo pr2otel --number 7`,
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
+		// https://opentelemetry.io/docs/languages/go/getting-started/#initialize-the-opentelemetry-sdk
+		// Handle SIGINT (CTRL+C) gracefully.
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer stop()
+
+		// Set up OpenTelemetry.
+		otelShutdown, err := internal.SetupOTelSDK(ctx)
+		if err != nil {
+			return
+		}
+		// Handle shutdown properly so nothing leaks.
+		defer func() {
+			err = errors.Join(err, otelShutdown(context.Background()))
+		}()
 
 		owner, _ := cmd.Flags().GetString("owner")
 		repo, _ := cmd.Flags().GetString("repo")
