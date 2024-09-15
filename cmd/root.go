@@ -7,9 +7,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version string = "unspecified"
+
 // nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
 	Use:   "pr2otel",
+	Version: version,
 	Short: "Convert GitHub Pull Request to OpenTelemetry-compatible telemetry.",
 	Long: `Convert GitHub Pull Request to OpenTelemetry-compatible telemetry.
 
