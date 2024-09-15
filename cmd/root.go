@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"context"
+	"log"
+	"log/slog"
+	"os"
 
-	"github.com/spf13/cobra"
 	"github.com/google/go-github/v64/github"
+	"github.com/spf13/cobra"
 )
 
 var version string = "unspecified"
@@ -31,11 +32,34 @@ var rootCmd = &cobra.Command{
 
 		pr, _, err := client.PullRequests.Get(ctx, owner, repo, number)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
+		log.Println(pr.GetTitle())
 
-		fmt.Println(pr.GetTitle())
+		opt := &github.ListOptions{
+			PerPage: 100,
+		}
+
+		for {
+			events, resp, err := client.Issues.ListIssueTimeline(ctx, owner, repo, number, opt)
+			if err != nil {
+				log.Fatalf("Error fetching timeline: %v", err)
+				slog.Error("Error fetching timeline %v", err)
+			}
+
+			for _, event := range events {
+				slog.Info(
+					"Timeline Event Fetched.",
+					"type", event.GetEvent(),
+				)
+			}
+
+			if resp.NextPage == 0 {
+				break
+			}
+			opt.Page = resp.NextPage
+		}
 	},
 }
 
