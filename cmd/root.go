@@ -11,9 +11,20 @@ import (
 
 	"github.com/google/go-github/v64/github"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel"
+	// "go.opentelemetry.io/otel/attribute"
 )
 
 var version string = "unspecified"
+
+const name = "github.com/kazuki-iwanaga/pr2otel"
+
+var (
+	tracer = otel.Tracer(name)
+	// meter  = otel.Meter(name)
+	logger = otelslog.NewLogger(name)
+)
 
 // nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
@@ -26,7 +37,10 @@ var rootCmd = &cobra.Command{
 	Example: `  pr2otel --url https://github.com/kazuki-iwanaga/pr2otel/pull/7
   pr2otel --owner kazuki-iwanaga --repo pr2otel --number 7`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// https://opentelemetry.io/docs/languages/go/getting-started/#initialize-the-opentelemetry-sdk
+		// ...
+		// Setup OpenTelemetry
+		// Ref. https://opentelemetry.io/docs/languages/go/getting-started
+		// <--
 		// Handle SIGINT (CTRL+C) gracefully.
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer stop()
@@ -40,6 +54,7 @@ var rootCmd = &cobra.Command{
 		defer func() {
 			err = errors.Join(err, otelShutdown(context.Background()))
 		}()
+		// -->
 
 		owner, _ := cmd.Flags().GetString("owner")
 		repo, _ := cmd.Flags().GetString("repo")
@@ -54,6 +69,9 @@ var rootCmd = &cobra.Command{
 		}
 		fmt.Println(pr.GetTitle())
 
+		ctx, span := tracer.Start(ctx, pr.GetTitle())
+		defer span.End()
+
 		opt := &github.ListOptions{
 			PerPage: 100,
 		}
@@ -67,6 +85,11 @@ var rootCmd = &cobra.Command{
 
 			for _, event := range events {
 				fmt.Println(event.GetCreatedAt(), event.GetEvent())
+				logger.InfoContext(ctx,
+					"Event Retrieved",
+					"created_at", event.GetCreatedAt(),
+					"event", event.GetEvent(),
+				)
 			}
 
 			if resp.NextPage == 0 {

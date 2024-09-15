@@ -5,6 +5,7 @@ go 1.22.7
 require (
 	github.com/google/go-github/v64 v64.0.0
 	github.com/spf13/cobra v1.8.1
+	go.opentelemetry.io/contrib/bridges/otelslog v0.5.0
 	go.opentelemetry.io/otel v1.30.0
 	go.opentelemetry.io/otel/exporters/stdout/stdoutlog v0.6.0
 	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.30.0
