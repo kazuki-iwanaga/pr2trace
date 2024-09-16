@@ -19,6 +19,7 @@ import (
 
 var name = "github.com/kazuki-iwanaga/pr2otel"
 var version = "unspecified (probably built without goreleaser)"
+
 const SchemaURL = "https://opentelemetry.io/schemas/1.26.0"
 
 // nolint: exhaustruct, gochecknoglobals
@@ -126,6 +127,9 @@ var rootCmd = &cobra.Command{
 				fmt.Println(event.GetCreatedAt(), event.GetEvent())
 				span.AddEvent(
 					event.GetEvent(),
+					trace.WithAttributes(
+						githubIssueEvent2OtelAttributes(event)...,
+					),
 				)
 			}
 
@@ -162,4 +166,12 @@ func init() {
 	// Enable OpenTelemetry for CLI (default: false)
 	// This flag controls the otel instrumentation not for pr2otel function but for the CLI itself.
 	rootCmd.Flags().BoolP("enable-cli-otel", "", false, "Enable OpenTelemetry for CLI (default: false)")
+}
+
+func githubIssueEvent2OtelAttributes(t *github.IssueEvent) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		attribute.String("actor", t.GetActor().GetLogin()),
+		attribute.String("event", t.GetEvent()),
+		attribute.String("createdAt", t.GetCreatedAt().String()),
+	}
 }
