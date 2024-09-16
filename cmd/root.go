@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -89,6 +90,13 @@ func init() {
 	// This flag controls the otel instrumentation not for pr2otel function but for the CLI itself.
 	rootCmd.Flags().BoolP("enable-cli-otel", "", false, "Enable OpenTelemetry for CLI (default: false)")
 
+	// OpenTelemetry Trace Exporter (default: stdout)
+	rootCmd.Flags().StringP("otel-trace-exporter", "", "",
+		"OpenTelemetry Trace Exporter [stdout, otlp] (default: stdout)")
+	// OpenTelemetry OTLP Endpoint (default: localhost:4317)
+	rootCmd.Flags().StringP("otel-exporter-otlp-endpoint", "", "",
+		"OpenTelemetry OTLP Endpoint (default: localhost:4317)")
+
 	rootCmd.Flags().VisitAll(func(f *pflag.Flag) {
 		constantCaseFlagName := strings.ToUpper(strings.Replace(f.Name, "-", "_", -1))
 		if err := viper.BindPFlag(constantCaseFlagName, f); err != nil {
@@ -119,10 +127,23 @@ func pr2otel(ctx context.Context, client *github.Client, owner, repo string, num
 		os.Exit(1)
 	}
 
-	traceExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	var traceExporter sdktrace.SpanExporter
+	switch viper.GetString("otel_trace_exporter") {
+	case "otlp":
+		traceExporter, err = otlptracegrpc.New(ctx,
+			otlptracegrpc.WithInsecure(),
+			otlptracegrpc.WithEndpoint(viper.GetString("otel_exporter_otlp_endpoint")),
+		)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	default:
+		traceExporter, err = stdouttrace.New(stdouttrace.WithPrettyPrint())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 
 	traceSpanProcessor := sdktrace.NewBatchSpanProcessor(traceExporter,
