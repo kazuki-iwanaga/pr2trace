@@ -54,89 +54,8 @@ var rootCmd = &cobra.Command{
 		}
 		// -->
 
-		// ...
-		// Setup OpenTelemetry SDK
-		// <--
-		resource, err := resource.New(ctx,
-			resource.WithSchemaURL(semconv.SchemaURL),
-			resource.WithAttributes(
-				semconv.ServiceNameKey.String(fmt.Sprintf("%s/%s", owner, repo)),
-				semconv.ServiceVersionKey.String(version),
-			),
-		)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		traceExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		traceSpanProcessor := sdktrace.NewBatchSpanProcessor(traceExporter,
-			sdktrace.WithBatchTimeout(time.Second),
-		)
-		traceSampler := sdktrace.ParentBased(sdktrace.AlwaysSample())
-		tracerProvider := sdktrace.NewTracerProvider(
-			sdktrace.WithResource(resource),
-			sdktrace.WithSpanProcessor(traceSpanProcessor),
-			sdktrace.WithSampler(traceSampler),
-		)
-		defer func() {
-			if err := tracerProvider.Shutdown(ctx); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}()
-
-		tracer := tracerProvider.Tracer(name)
-		// -->
-
-		// ...
-		// Call GitHub APIs
-		// <--
 		client := github.NewClient(nil)
-		pr, _, err := client.PullRequests.Get(ctx, owner, repo, number)
-
-		ctx, span := tracer.Start(
-			ctx,
-			pr.GetTitle(),
-			trace.WithAttributes(githubPullRequest2OtelAttributes(pr)...),
-		)
-		defer span.End()
-
-		// nolint: exhaustruct, mnd
-		opt := &github.ListOptions{
-			PerPage: 100,
-		}
-		for {
-			events, resp, err := client.Issues.ListIssueEvents(ctx, owner, repo, number, opt)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-
-			for _, event := range events {
-				fmt.Println(event.GetCreatedAt(), event.GetEvent())
-
-				span.AddEvent(
-					event.GetEvent(),
-					trace.WithTimestamp(event.GetCreatedAt().Time),
-					trace.WithAttributes(
-						githubIssueEvent2OtelAttributes(event)...,
-					),
-				)
-			}
-
-			// Pagination
-			if resp.NextPage == 0 {
-				break
-			}
-			opt.Page = resp.NextPage
-		}
-		// -->
+		pr2otel(ctx, client, owner, repo, number)
 	},
 }
 
@@ -163,6 +82,93 @@ func init() {
 	// Enable OpenTelemetry for CLI (default: false)
 	// This flag controls the otel instrumentation not for pr2otel function but for the CLI itself.
 	rootCmd.Flags().BoolP("enable-cli-otel", "", false, "Enable OpenTelemetry for CLI (default: false)")
+}
+
+func pr2otel(ctx context.Context, client *github.Client, owner, repo string, number int) {
+	// ...
+	// Setup OpenTelemetry SDK
+	// <--
+	resource, err := resource.New(ctx,
+		resource.WithSchemaURL(semconv.SchemaURL),
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(fmt.Sprintf("%s/%s", owner, repo)),
+			semconv.ServiceVersionKey.String(version),
+		),
+	)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	traceExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	traceSpanProcessor := sdktrace.NewBatchSpanProcessor(traceExporter,
+		sdktrace.WithBatchTimeout(time.Second),
+	)
+	traceSampler := sdktrace.ParentBased(sdktrace.AlwaysSample())
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithResource(resource),
+		sdktrace.WithSpanProcessor(traceSpanProcessor),
+		sdktrace.WithSampler(traceSampler),
+	)
+	defer func() {
+		if err := tracerProvider.Shutdown(ctx); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}()
+
+	tracer := tracerProvider.Tracer(name)
+	// -->
+
+	// ...
+	// Pull Request as Span
+	// <--
+	pr, _, err := client.PullRequests.Get(ctx, owner, repo, number)
+	ctx, span := tracer.Start(
+		ctx,
+		pr.GetTitle(),
+		trace.WithAttributes(githubPullRequest2OtelAttributes(pr)...),
+		trace.WithTimestamp(pr.GetCreatedAt().Time),
+	)
+	defer span.End(trace.WithTimestamp(pr.GetMergedAt().Time))
+	// -->
+
+	// ...
+	// Pull Request Timeline Events as Span Events
+	// <--
+	// nolint: exhaustruct, mnd
+	opt := &github.ListOptions{
+		PerPage: 100,
+	}
+	for {
+		events, resp, err := client.Issues.ListIssueEvents(ctx, owner, repo, number, opt)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		for _, event := range events {
+			fmt.Println(event.GetCreatedAt(), event.GetEvent())
+
+			span.AddEvent(
+				event.GetEvent(),
+				trace.WithAttributes(githubIssueEvent2OtelAttributes(event)...),
+				trace.WithTimestamp(event.GetCreatedAt().Time),
+			)
+		}
+
+		// Pagination
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
+	}
+	// -->
 }
 
 func githubIssueEvent2OtelAttributes(t *github.IssueEvent) []attribute.KeyValue {
