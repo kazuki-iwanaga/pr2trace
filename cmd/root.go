@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/v64/github"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -37,21 +40,9 @@ var rootCmd = &cobra.Command{
 		// ...
 		// Retrieve the target Pull Request information from flags
 		// <--
-		owner, err := cmd.Flags().GetString("owner")
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		repo, err := cmd.Flags().GetString("repo")
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		number, err := cmd.Flags().GetInt("number")
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		owner := viper.GetString("owner")
+		repo := viper.GetString("repo")
+		number := viper.GetInt("number")
 		// -->
 
 		client := github.NewClient(nil)
@@ -71,9 +62,9 @@ func init() {
 	rootCmd.Flags().StringP("owner", "o", "", "Owner of the GitHub repository")
 	rootCmd.Flags().StringP("repo", "r", "", "Name of the GitHub repository")
 	rootCmd.Flags().IntP("number", "n", 0, "Number of the GitHub Pull Request")
-	rootCmd.MarkFlagRequired("owner")
-	rootCmd.MarkFlagRequired("repo")
-	rootCmd.MarkFlagRequired("number")
+	// rootCmd.MarkFlagRequired("owner")
+	// rootCmd.MarkFlagRequired("repo")
+	// rootCmd.MarkFlagRequired("number")
 
 	// GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests
 	// rootCmd.Flags().StringP("github-token", "g", "",
@@ -82,6 +73,19 @@ func init() {
 	// Enable OpenTelemetry for CLI (default: false)
 	// This flag controls the otel instrumentation not for pr2otel function but for the CLI itself.
 	rootCmd.Flags().BoolP("enable-cli-otel", "", false, "Enable OpenTelemetry for CLI (default: false)")
+
+	rootCmd.Flags().VisitAll(func(f *pflag.Flag) {
+		constantCaseFlagName := strings.ToUpper(strings.Replace(f.Name, "-", "_", -1))
+		if err := viper.BindPFlag(constantCaseFlagName, f); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err := viper.BindEnv(f.Name, constantCaseFlagName); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	})
+	viper.AutomaticEnv()
 }
 
 func pr2otel(ctx context.Context, client *github.Client, owner, repo string, number int) {
