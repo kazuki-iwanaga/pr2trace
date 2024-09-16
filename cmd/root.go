@@ -9,9 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version string = "unspecified"
+var version string = "unspecified (probably built without goreleaser)"
 
-// nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
 	Use:     "pr2otel",
 	Version: version,
