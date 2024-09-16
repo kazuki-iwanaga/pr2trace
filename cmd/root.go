@@ -23,6 +23,8 @@ import (
 var name = "github.com/kazuki-iwanaga/pr2otel"
 var version = "unspecified (probably built without goreleaser)"
 
+var configFilePath string
+
 // nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
 	Use:     "pr2otel",
@@ -58,17 +60,30 @@ func Execute() {
 }
 
 func init() {
+	cobra.OnInitialize(func() {
+		if configFilePath != "" {
+			viper.SetConfigFile(configFilePath)
+		} else {
+			viper.SetConfigName(".pr2otel")
+		}
+		viper.AddConfigPath(".")
+		viper.SetConfigType("env")
+
+		if err := viper.ReadInConfig(); err != nil {
+			fmt.Println(err)
+		}
+	})
+	rootCmd.PersistentFlags().StringVar(&configFilePath,
+		"config", "", "Configuration filepath (default is ./.pr2otel.env)")
+
 	// Specify the target Pull Request
 	rootCmd.Flags().StringP("owner", "o", "", "Owner of the GitHub repository")
 	rootCmd.Flags().StringP("repo", "r", "", "Name of the GitHub repository")
 	rootCmd.Flags().IntP("number", "n", 0, "Number of the GitHub Pull Request")
-	// rootCmd.MarkFlagRequired("owner")
-	// rootCmd.MarkFlagRequired("repo")
-	// rootCmd.MarkFlagRequired("number")
 
 	// GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests
-	// rootCmd.Flags().StringP("github-token", "g", "",
-	// 	"GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests")
+	rootCmd.Flags().StringP("github-token", "", "",
+		"GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests")
 
 	// Enable OpenTelemetry for CLI (default: false)
 	// This flag controls the otel instrumentation not for pr2otel function but for the CLI itself.
