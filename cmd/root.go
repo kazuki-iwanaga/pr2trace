@@ -92,24 +92,21 @@ var rootCmd = &cobra.Command{
 		}()
 
 		tracer := tracerProvider.Tracer(name)
-
-		commonAttributes := []attribute.KeyValue{
-			attribute.String("owner", owner),
-			attribute.String("repo", repo),
-			attribute.Int("number", number),
-		}
 		// -->
 
 		// ...
 		// Call GitHub APIs
 		// <--
-		ctx, span := tracer.Start(ctx,
-			"Call GitHub APIs",
-			trace.WithAttributes(commonAttributes...),
+		client := github.NewClient(nil)
+		pr, _, err := client.PullRequests.Get(ctx, owner, repo, number)
+
+		ctx, span := tracer.Start(
+			ctx,
+			pr.GetTitle(),
+			trace.WithAttributes(githubPullRequest2OtelAttributes(pr)...),
 		)
 		defer span.End()
 
-		client := github.NewClient(nil)
 		// nolint: exhaustruct, mnd
 		opt := &github.ListOptions{
 			PerPage: 100,
@@ -173,7 +170,31 @@ func githubIssueEvent2OtelAttributes(t *github.IssueEvent) []attribute.KeyValue 
 	return []attribute.KeyValue{
 		attribute.String("url", t.GetURL()),
 		attribute.String("event", t.GetEvent()),
-		attribute.String("created_at", t.GetCreatedAt().String()),
+		attribute.String("createdAt", t.GetCreatedAt().String()),
 		attribute.String("actor", t.GetActor().GetLogin()),
+	}
+}
+
+func githubPullRequest2OtelAttributes(t *github.PullRequest) []attribute.KeyValue {
+	// https://github.com/google/go-github/blob/master/github/pulls.go
+	return []attribute.KeyValue{
+		attribute.String("url", t.GetURL()),
+		attribute.String("title", t.GetTitle()),
+		attribute.String("body", t.GetBody()),
+		attribute.String("state", t.GetState()),
+		attribute.String("createdAt", t.GetCreatedAt().String()),
+		attribute.String("updatedAt", t.GetUpdatedAt().String()),
+		attribute.String("closedAt", t.GetClosedAt().String()),
+		attribute.String("mergedAt", t.GetMergedAt().String()),
+		attribute.Int("additions", t.GetAdditions()),
+		attribute.Int("deletions", t.GetDeletions()),
+		attribute.Int("changedFiles", t.GetChangedFiles()),
+		attribute.StringSlice("labels", func (l []*github.Label) []string {
+			var labels []string
+			for _, label := range l {
+				labels = append(labels, label.GetName())
+			}
+			return labels
+		}(t.Labels)),
 	}
 }
