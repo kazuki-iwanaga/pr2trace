@@ -2,29 +2,14 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
-	"os/signal"
-
-	"github.com/kazuki-iwanaga/pr2otel/internal"
 
 	"github.com/google/go-github/v64/github"
 	"github.com/spf13/cobra"
-	"go.opentelemetry.io/contrib/bridges/otelslog"
-	"go.opentelemetry.io/otel"
-	// "go.opentelemetry.io/otel/attribute"
 )
 
 var version string = "unspecified"
-
-const name = "github.com/kazuki-iwanaga/pr2otel"
-
-var (
-	tracer = otel.Tracer(name)
-	// meter  = otel.Meter(name)
-	logger = otelslog.NewLogger(name)
-)
 
 // nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
@@ -37,47 +22,20 @@ var rootCmd = &cobra.Command{
 	Example: `  pr2otel --url https://github.com/kazuki-iwanaga/pr2otel/pull/7
   pr2otel --owner kazuki-iwanaga --repo pr2otel --number 7`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// ...
-		// Setup OpenTelemetry
-		// Ref. https://opentelemetry.io/docs/languages/go/getting-started
-		// <--
-		// Handle SIGINT (CTRL+C) gracefully.
-		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-		defer stop()
-
-		// Set up OpenTelemetry.
-		otelShutdown, err := internal.SetupOTelSDK(ctx)
-		if err != nil {
-			return
-		}
-		// Handle shutdown properly so nothing leaks.
-		defer func() {
-			err = errors.Join(err, otelShutdown(context.Background()))
-		}()
-		// -->
-
 		owner, _ := cmd.Flags().GetString("owner")
 		repo, _ := cmd.Flags().GetString("repo")
 		number, _ := cmd.Flags().GetInt("number")
 
 		client := github.NewClient(nil)
 
-		pr, _, err := client.PullRequests.Get(ctx, owner, repo, number)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Println(pr.GetTitle())
-
-		ctx, span := tracer.Start(ctx, pr.GetTitle())
-		defer span.End()
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
 		opt := &github.ListOptions{
 			PerPage: 100,
 		}
 		for {
-			events, resp, err := client.Issues.ListIssueEvents(
-				ctx, owner, repo, number, opt)
+			events, resp, err := client.Issues.ListIssueEvents(ctx, owner, repo, number, opt)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -85,13 +43,9 @@ var rootCmd = &cobra.Command{
 
 			for _, event := range events {
 				fmt.Println(event.GetCreatedAt(), event.GetEvent())
-				logger.InfoContext(ctx,
-					"Event Retrieved",
-					"created_at", event.GetCreatedAt(),
-					"event", event.GetEvent(),
-				)
 			}
 
+			// Pagination
 			if resp.NextPage == 0 {
 				break
 			}
@@ -108,12 +62,19 @@ func Execute() {
 }
 
 func init() {
+	// Specify the target Pull Request
 	rootCmd.Flags().StringP("owner", "o", "", "Owner of the GitHub repository")
 	rootCmd.Flags().StringP("repo", "r", "", "Name of the GitHub repository")
-	rootCmd.Flags().IntP("number", "n", 1, "Number of the GitHub Pull Request")
+	rootCmd.Flags().IntP("number", "n", 0, "Number of the GitHub Pull Request")
 	rootCmd.MarkFlagRequired("owner")
 	rootCmd.MarkFlagRequired("repo")
 	rootCmd.MarkFlagRequired("number")
 
+	// GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests
+	// NOTE: This flag is not implemented yet.
+	rootCmd.Flags().StringP("github-token", "g", "", "GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests")
+
+	// Enable OpenTelemetry for CLI (default: false)
+	// This flag controls the otel instrumentation not for pr2otel function but for the CLI itself.
 	rootCmd.Flags().BoolP("enable-cli-otel", "", false, "Enable OpenTelemetry for CLI (default: false)")
 }
