@@ -1,7 +1,0 @@
-{
-    "name": "pr2otel golang devcontainer",
-    "build": {
-        "context": "..",
-        "dockerfile": "./Dockerfile"
-    }
-}
