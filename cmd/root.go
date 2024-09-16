@@ -92,8 +92,8 @@ func init() {
 	// rootCmd.MarkFlagRequired("number")
 
 	// GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests
-	rootCmd.Flags().StringP("github-token", "g", "",
-		"GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests")
+	// rootCmd.Flags().StringP("github-token", "g", "",
+	// 	"GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests")
 
 	// Enable OpenTelemetry for CLI (default: false)
 	// This flag controls the otel instrumentation not for pr2otel function but for the CLI itself.
