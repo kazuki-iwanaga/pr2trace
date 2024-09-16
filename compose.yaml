@@ -1,0 +1,38 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: devcontainer
+    volumes:
+      - .:/app
+    command: sleep infinity
+  otelcol:
+    # https://opentelemetry.io/docs/collector/installation/#docker-compose
+    container_name: otelcol
+    image: otel/opentelemetry-collector-contrib:$OTELCOL_VERSION
+    volumes:
+      - ./.otelcol.yaml:/etc/otelcol-contrib/config.yaml
+    environment:
+      - OTELCOL_GRPC_PORT=$OTELCOL_GRPC_PORT
+      - OTELCOL_HTTP_PORT=$OTELCOL_HTTP_PORT
+      - O2_GRPC_PORT=$O2_GRPC_PORT
+      - O2_AUTH_TOKEN=$O2_AUTH_TOKEN
+      - O2_ORG=$O2_ORG
+      - O2_STREAM=$O2_STREAM
+    depends_on:
+      - o2
+  o2:
+    # https://openobserve.ai/docs/guide/quickstart/#self-hosted-installation
+    container_name: o2
+    image: public.ecr.aws/zinclabs/openobserve:v$O2_VERSION
+    ports:
+      - $O2_HTTP_PORT:$O2_HTTP_PORT
+    environment:
+      - ZO_ROOT_USER_EMAIL=$O2_USER
+      - ZO_ROOT_USER_PASSWORD=$O2_PASSWORD
+      - ZO_HTTP_PORT=$O2_HTTP_PORT
+      - ZO_GRPC_PORT=$O2_GRPC_PORT
+      # Send anonymous telemetry info for improving OpenObserve. You can disable by set it to false
+      - ZO_TELEMETRY=false

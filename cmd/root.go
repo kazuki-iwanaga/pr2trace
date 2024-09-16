@@ -71,9 +71,9 @@ func init() {
 	rootCmd.Flags().StringP("owner", "o", "", "Owner of the GitHub repository")
 	rootCmd.Flags().StringP("repo", "r", "", "Name of the GitHub repository")
 	rootCmd.Flags().IntP("number", "n", 0, "Number of the GitHub Pull Request")
-	// rootCmd.MarkFlagRequired("owner")
-	// rootCmd.MarkFlagRequired("repo")
-	// rootCmd.MarkFlagRequired("number")
+	rootCmd.MarkFlagRequired("owner")
+	rootCmd.MarkFlagRequired("repo")
+	rootCmd.MarkFlagRequired("number")
 
 	// GitHub Token (e.g. Personal Access Token, GITHUB_TOKEN in GitHub Actions) to be used for API requests
 	// rootCmd.Flags().StringP("github-token", "g", "",

@@ -1,0 +1,38 @@
+# https://opentelemetry.io/docs/collector/configuration/#basics
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:${env:OTELCOL_GRPC_PORT}
+      http:
+        endpoint: 0.0.0.0:${env:OTELCOL_HTTP_PORT}
+processors:
+  batch:
+exporters:
+  debug:
+  otlp/o2:
+    # https://openobserve.ai/docs/ingestion/logs/otlp/
+    endpoint: http://o2:${env:O2_GRPC_PORT}
+    headers:
+      Authorization: Basic ${env:O2_AUTH_TOKEN}
+      organization: ${env:O2_ORG}
+      stream-name: ${env:O2_STREAM}
+    tls:
+      insecure: true
+extensions:
+  health_check:
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/o2]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/o2]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/o2]
