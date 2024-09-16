@@ -20,8 +20,6 @@ import (
 var name = "github.com/kazuki-iwanaga/pr2otel"
 var version = "unspecified (probably built without goreleaser)"
 
-const SchemaURL = "https://opentelemetry.io/schemas/1.26.0"
-
 // nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
 	Use:     "pr2otel",
@@ -169,9 +167,11 @@ func init() {
 }
 
 func githubIssueEvent2OtelAttributes(t *github.IssueEvent) []attribute.KeyValue {
+	// https://github.com/google/go-github/blob/master/github/issues_events.go
 	return []attribute.KeyValue{
-		attribute.String("actor", t.GetActor().GetLogin()),
+		attribute.String("url", t.GetURL()),
 		attribute.String("event", t.GetEvent()),
-		attribute.String("createdAt", t.GetCreatedAt().String()),
+		attribute.String("created_at", t.GetCreatedAt().String()),
+		attribute.String("actor", t.GetActor().GetLogin()),
 	}
 }
