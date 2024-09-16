@@ -120,7 +120,7 @@ var rootCmd = &cobra.Command{
 
 			for _, event := range events {
 				fmt.Println(event.GetCreatedAt(), event.GetEvent())
-				
+
 				span.AddEvent(
 					event.GetEvent(),
 					trace.WithTimestamp(event.GetCreatedAt().Time),
@@ -189,7 +189,7 @@ func githubPullRequest2OtelAttributes(t *github.PullRequest) []attribute.KeyValu
 		attribute.Int("additions", t.GetAdditions()),
 		attribute.Int("deletions", t.GetDeletions()),
 		attribute.Int("changedFiles", t.GetChangedFiles()),
-		attribute.StringSlice("labels", func (l []*github.Label) []string {
+		attribute.StringSlice("labels", func(l []*github.Label) []string {
 			var labels []string
 			for _, label := range l {
 				labels = append(labels, label.GetName())
