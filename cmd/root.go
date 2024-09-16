@@ -4,12 +4,22 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/google/go-github/v64/github"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
+var name = "github.com/kazuki-iwanaga/pr2otel"
 var version = "unspecified (probably built without goreleaser)"
+const SchemaURL = "https://opentelemetry.io/schemas/1.26.0"
 
 // nolint: exhaustruct, gochecknoglobals
 var rootCmd = &cobra.Command{
@@ -22,6 +32,9 @@ var rootCmd = &cobra.Command{
 	Example: `  pr2otel --url https://github.com/kazuki-iwanaga/pr2otel/pull/7
   pr2otel --owner kazuki-iwanaga --repo pr2otel --number 7`,
 	Run: func(cmd *cobra.Command, _ []string) {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer cancel()
+
 		// ...
 		// Retrieve the target Pull Request information from flags
 		// <--
@@ -42,14 +55,62 @@ var rootCmd = &cobra.Command{
 		}
 		// -->
 
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
+		// ...
+		// Setup OpenTelemetry SDK
+		// <--
+		resource, err := resource.New(ctx,
+			resource.WithSchemaURL(semconv.SchemaURL),
+			resource.WithAttributes(
+				semconv.ServiceNameKey.String(fmt.Sprintf("%s/%s", owner, repo)),
+				semconv.ServiceVersionKey.String(version),
+			),
+		)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		traceExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		traceSpanProcessor := sdktrace.NewBatchSpanProcessor(traceExporter,
+			sdktrace.WithBatchTimeout(time.Second),
+		)
+		traceSampler := sdktrace.ParentBased(sdktrace.AlwaysSample())
+		tracerProvider := sdktrace.NewTracerProvider(
+			sdktrace.WithResource(resource),
+			sdktrace.WithSpanProcessor(traceSpanProcessor),
+			sdktrace.WithSampler(traceSampler),
+		)
+		defer func() {
+			if err := tracerProvider.Shutdown(ctx); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}()
+
+		tracer := tracerProvider.Tracer(name)
+
+		commonAttributes := []attribute.KeyValue{
+			attribute.String("owner", owner),
+			attribute.String("repo", repo),
+			attribute.Int("number", number),
+		}
+		// -->
 
 		// ...
 		// Call GitHub APIs
 		// <--
-		client := github.NewClient(nil)
+		ctx, span := tracer.Start(ctx,
+			"Call GitHub APIs",
+			trace.WithAttributes(commonAttributes...),
+		)
+		defer span.End()
 
+		client := github.NewClient(nil)
 		// nolint: exhaustruct, mnd
 		opt := &github.ListOptions{
 			PerPage: 100,
@@ -63,6 +124,9 @@ var rootCmd = &cobra.Command{
 
 			for _, event := range events {
 				fmt.Println(event.GetCreatedAt(), event.GetEvent())
+				span.AddEvent(
+					event.GetEvent(),
+				)
 			}
 
 			// Pagination
