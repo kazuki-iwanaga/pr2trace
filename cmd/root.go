@@ -123,8 +123,10 @@ var rootCmd = &cobra.Command{
 
 			for _, event := range events {
 				fmt.Println(event.GetCreatedAt(), event.GetEvent())
+				
 				span.AddEvent(
 					event.GetEvent(),
+					trace.WithTimestamp(event.GetCreatedAt().Time),
 					trace.WithAttributes(
 						githubIssueEvent2OtelAttributes(event)...,
 					),
