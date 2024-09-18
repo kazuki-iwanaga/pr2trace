@@ -13,7 +13,20 @@ services:
       - "$OTELCOL_HTTP_PORT:$OTELCOL_HTTP_PORT"
 
   loki:
+    container_name: loki
     image: grafana/loki:$LOKI_VERSION
     volumes:
       - ./config/loki.yaml:/etc/loki/config.yaml
     command: "-config.file=/etc/loki/config.yaml -target=all"
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:$GRAFANA_VERSION
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./config/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+    ports:
+      - "$GRAFANA_PORT:$GRAFANA_PORT"
