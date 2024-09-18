@@ -55,7 +55,7 @@ dockers:
       - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}.{{ .Minor }}-amd64"
       - "ghcr.io/kazuki-iwanaga/pr2otel:latest-amd64"
     use: buildx
-    dockerfile: goreleaser.dockerfile
+    dockerfile: .goreleaser.dockerfile
     build_flag_templates:
       - "--pull"
       - "--platform=linux/amd64"
@@ -65,7 +65,7 @@ dockers:
       - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}.{{ .Minor }}-arm64"
       - "ghcr.io/kazuki-iwanaga/pr2otel:latest-arm64"
     use: buildx
-    dockerfile: goreleaser.dockerfile
+    dockerfile: .goreleaser.dockerfile
     build_flag_templates:
       - "--pull"
       - "--platform=linux/arm64"
