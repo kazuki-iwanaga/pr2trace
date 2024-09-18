@@ -8,3 +8,9 @@ services:
     environment:
       - OTELCOL_GRPC_PORT=$OTELCOL_GRPC_PORT
       - OTELCOL_HTTP_PORT=$OTELCOL_HTTP_PORT
+
+  loki:
+    image: grafana/loki:$LOKI_VERSION
+    volumes:
+      - ./config/loki.yaml:/etc/loki/config.yaml
+    command: "-config.file=/etc/loki/config.yaml -target=all"
