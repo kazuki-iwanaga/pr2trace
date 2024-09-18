@@ -12,6 +12,8 @@ exporters:
   debug:
   otlphttp/tempo:
     endpoint: http://tempo:4318
+  otlphttp/mimir:
+    endpoint: http://mimir:9009/otlp
   otlphttp/loki:
     endpoint: http://loki:3100/otlp
 extensions:
@@ -28,7 +30,7 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [debug, otlphttp/mimir]
     logs:
       receivers: [otlp]
       processors: [batch]

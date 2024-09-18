@@ -36,6 +36,13 @@ services:
       - ./config/loki.yaml:/etc/loki/config.yaml
     command: "-config.file=/etc/loki/config.yaml -target=all"
 
+  mimir:
+    container_name: mimir
+    image: grafana/mimir:$MIMIR_VERSION
+    volumes:
+      - ./config/mimir.yaml:/etc/mimir.yaml
+    command: "-config.file=/etc/mimir.yaml -target=all"
+
   grafana:
     container_name: grafana
     image: grafana/grafana:$GRAFANA_VERSION
