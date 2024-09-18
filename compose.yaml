@@ -12,6 +12,23 @@ services:
       - "$OTELCOL_GRPC_PORT:$OTELCOL_GRPC_PORT"
       - "$OTELCOL_HTTP_PORT:$OTELCOL_HTTP_PORT"
 
+  tempo:
+    container_name: tempo
+    image: grafana/tempo:$TEMPO_VERSION
+    volumes:
+      - ./config/tempo.yaml:/etc/tempo.yaml
+    command: [ "-config.file=/etc/tempo.yaml" ]
+
+  prometheus:
+    image: prom/prometheus:v$PROMETHEUS_VERSION
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
+    volumes:
+      - ./config/prometheus.yaml:/etc/prometheus.yaml
+
   loki:
     container_name: loki
     image: grafana/loki:$LOKI_VERSION
@@ -26,6 +43,7 @@ services:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
     volumes:
       - ./config/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
     ports:

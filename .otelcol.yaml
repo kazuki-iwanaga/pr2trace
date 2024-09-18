@@ -10,6 +10,8 @@ processors:
   batch:
 exporters:
   debug:
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
   otlphttp/loki:
     endpoint: http://loki:3100/otlp
 extensions:
@@ -22,7 +24,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [debug, otlphttp/tempo]
     metrics:
       receivers: [otlp]
       processors: [batch]
