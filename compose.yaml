@@ -1,0 +1,10 @@
+services:
+  otelcol:
+    # https://opentelemetry.io/docs/collector/installation/#docker-compose
+    container_name: otelcol
+    image: otel/opentelemetry-collector-contrib:$OTELCOL_VERSION
+    volumes:
+      - ./.otelcol.yaml:/etc/otelcol-contrib/config.yaml
+    environment:
+      - OTELCOL_GRPC_PORT=$OTELCOL_GRPC_PORT
+      - OTELCOL_HTTP_PORT=$OTELCOL_HTTP_PORT
