@@ -14,6 +14,7 @@ datasources:
       httpMethod: GET
   - name: Tempo
     type: tempo
+    uid: tempo
     access: proxy
     orgId: 1
     url: http://tempo:3200
@@ -22,11 +23,20 @@ datasources:
     version: 1
     editable: false
     apiVersion: 1
-    uid: tempo
     jsonData:
       httpMethod: GET
       serviceMap:
         datasourceUid: prometheus
+      lokiSearch:
+        datasourceUid: 'loki'
+      tracesToLogs:
+        datasourceUid: 'loki'
+        mappedTags: [{ key: 'service.name', value: 'service_name_extracted' }]
+        mapTagNamesEnabled: true
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        filterByTraceID: true
+        filterBySpanID: false
   - name: Loki
     type: loki
     uid: loki
