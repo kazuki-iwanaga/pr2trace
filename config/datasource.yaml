@@ -31,8 +31,6 @@ datasources:
         datasourceUid: 'loki'
       tracesToLogs:
         datasourceUid: 'loki'
-        mappedTags: [{ key: 'service.name', value: 'service_name_extracted' }]
-        mapTagNamesEnabled: true
         spanStartTimeShift: '-1h'
         spanEndTimeShift: '1h'
         filterByTraceID: true
@@ -51,7 +49,7 @@ datasources:
       derivedFields:
         - datasourceName: Tempo
           datasourceUid: tempo
-          matcherRegex: trace_id=(\w+)
+          matcherRegex: "traceID=(\\w+)"
           name: traceID
           url: '$${__value.raw}'
   - name: Mimir

@@ -23,3 +23,5 @@ common:
       store: inmemory
 limits_config:
   allow_structured_metadata: true
+  # discover_service_name:
+  #   - service.name
