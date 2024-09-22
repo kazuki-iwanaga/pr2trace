@@ -3,9 +3,9 @@
 
 <div align="center">
     <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./docs/logo-dark-mode.svg">
-        <source media="(prefers-color-scheme: light)" srcset="./docs/logo-white-mode.svg">
-        <img alt="pr2trace logo" src="./docs/logo-with-background.svg" width="256">
+        <source media="(prefers-color-scheme: dark)" srcset="./docs/logo-darkmode.svg">
+        <source media="(prefers-color-scheme: light)" srcset="./docs/logo-whitemode.svg">
+        <img alt="pr2trace logo" src="./docs/logo-whitemode-with-background.svg" width="360">
     </picture>
 </div>
 
