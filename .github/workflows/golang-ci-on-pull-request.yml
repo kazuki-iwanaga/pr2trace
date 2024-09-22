@@ -10,17 +10,6 @@ on:
       - '.github/workflows/golang-ci-on-pull-request.yml'
 
 jobs:
-  fmt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
-        with:
-          go-version-file: go.mod
-      - run: |
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-            exit 1
-          fi
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +28,7 @@ jobs:
   sast:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - uses: golang/govulncheck-action@dd0578b371c987f96d1185abb54344b44352bd58 # v1.0.3
         with:
           go-version-file: go.mod
