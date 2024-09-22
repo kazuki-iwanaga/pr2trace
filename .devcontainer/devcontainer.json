@@ -3,5 +3,20 @@
     "dockerComposeFile": "compose.yaml",
     "service": "devcontainer",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-    "postCreateCommand": "lefthook install"
+    "postCreateCommand": "lefthook install",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.go"
+            ],
+            "settings": {
+                "files.autoSave": "afterDelay",
+                "go.lintOnSave": "file",
+                "go.lintTool": "golangci-lint",
+                "go.lintFlags": [
+                    "--fast"
+                ]
+            }
+        }
+    }
 }
