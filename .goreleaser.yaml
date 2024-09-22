@@ -42,28 +42,28 @@ brews:
       owner: kazuki-iwanaga
       name: homebrew-tap
       token: "{{ .Env.PAT_HOMEBREW_TAP_REPO }}"
-    homepage: "https://github.com/kazuki-iwanaga/pr2otel"
-    description: "pr2otel is a tool to convert Pull Request to OpenTelemetry-compatible telemetry."
+    homepage: "https://github.com/kazuki-iwanaga/pr2trace"
+    description: "pr2trace is a tool to convert Pull Request to OpenTelemetry-compatible telemetry."
     license: "MIT"
 
 # https://goreleaser.com/customization/docker/
 # https://goreleaser.com/cookbooks/multi-platform-docker-images/
 dockers:
   - image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}.{{ .Minor }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:latest-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-amd64"
     use: buildx
     dockerfile: .goreleaser.dockerfile
     build_flag_templates:
       - "--pull"
       - "--platform=linux/amd64"
   - image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-arm64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}-arm64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}.{{ .Minor }}-arm64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:latest-arm64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-arm64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-arm64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-arm64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-arm64"
     use: buildx
     dockerfile: .goreleaser.dockerfile
     build_flag_templates:
@@ -71,19 +71,19 @@ dockers:
       - "--platform=linux/arm64"
     goarch: "arm64"
 docker_manifests:
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}"
+  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}-arm64"
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-arm64"
+  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}.{{ .Minor }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:v{{ .Major }}.{{ .Minor }}-arm64"
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2otel:latest"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-arm64"
+  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:latest"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2otel:latest-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2otel:latest-arm64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-amd64"
+      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-arm64"

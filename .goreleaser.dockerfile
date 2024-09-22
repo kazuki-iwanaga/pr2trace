@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/static:nonroot
 
-COPY --chown=nonroot:nonroot pr2otel /bin/pr2otel
+COPY --chown=nonroot:nonroot pr2trace /bin/pr2trace
 
 USER nonroot
 
-ENTRYPOINT ["/bin/pr2otel"]
+ENTRYPOINT ["/bin/pr2trace"]
