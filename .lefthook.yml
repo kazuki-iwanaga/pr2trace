@@ -1,12 +1,12 @@
 pre-commit:
   piped: true
   commands:
-    gomodtidy:
+    1_gomodtidy:
       glob: "*.go"
       run: go mod tidy -diff
-    golint:
+    2_golint:
       glob: "*.go"
       run: golangci-lint run ./...
-    gotest:
+    3_gotest:
       glob: "*.go"
       run: go test -v ./...
