@@ -1,7 +1,6 @@
 {
-    "name": "pr2otel golang devcontainer",
-    "build": {
-        "context": "..",
-        "dockerfile": "./Dockerfile"
-    }
+    "name": "pr2otel devcontainer",
+    "dockerComposeFile": "compose.yaml",
+    "service": "devcontainer",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
 }
