@@ -1,6 +1,13 @@
 name: release-on-tag-push
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/release-on-tag-push.yml"
+      - ".goreleaser.yml"
+      - ".goreleaser.dockerfile"
   push:
     tags:
       - "v*"
@@ -9,8 +16,43 @@ permissions:
   contents: write
   packages: write # Required to push images to GitHub Container Registry
 
+env:
+  PAT_HOMEBREW_TAP_REPO: ${{ secrets.PAT_HOMEBREW_TAP_REPO }}
+  TARGET_IMAGE_NAME: ghcr.io/kazuki-iwanaga/pr2trace
+
 jobs:
+  ci:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+      - uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+      - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        with:
+          go_version_file: go.mod
+      - uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
+        with:
+          version: "~> v2"
+          args: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
+        with:
+          version: "~> v2"
+          args: release --snapshot --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   goreleaser:
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -32,5 +74,3 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PAT_HOMEBREW_TAP_REPO: ${{ secrets.PAT_HOMEBREW_TAP_REPO }}
-          TARGET_IMAGE_NAME: ghcr.io/kazuki-iwanaga/pr2trace
