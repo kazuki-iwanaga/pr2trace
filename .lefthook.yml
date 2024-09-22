@@ -6,7 +6,7 @@ pre-commit:
       run: go mod tidy
     gofmt:
       glob: "*.go"
-      run: go fmt ./... && goimports -w {all_files}
+      run: gofmt -s -w {staged_files} && goimports -w {staged_files}
     govet:
       glob: "*.go"
       run: go vet ./...
