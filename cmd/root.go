@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var cfgFile string // nolint:gochecknoglobals // Required for cobra
 
-// rootCmd represents the base command when called without any subcommands
+// nolint:exhaustruct,gochecknoglobals // Required for cobra
 var rootCmd = &cobra.Command{
 	Use:   "pr2otel",
 	Short: "Convert Pull Request(s) to Trace.",
@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 For example:
   <TODO>`,
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println("Hello, World!")
+		fmt.Println("Hello, World!") // nolint:forbidigo // To be replaced with actual implementation
 	},
 }
 
@@ -29,6 +29,7 @@ func Execute() {
 	}
 }
 
+// nolint:gochecknoinits // Required for cobra
 func init() {
 	cobra.OnInitialize(initConfig)
 
