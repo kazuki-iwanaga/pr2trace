@@ -1,0 +1,21 @@
+pre-commit:
+  parallel: true
+  commands:
+    gomodtidy:
+      glob: "*.go"
+      run: go mod tidy
+    gofmt:
+      glob: "*.go"
+      run: go fmt ./... && goimports -w {all_files}
+    govet:
+      glob: "*.go"
+      run: go vet ./...
+    golint:
+      glob: "*.go"
+      run: golangci-lint run ./...
+    govuln:
+      glob: "*.go"
+      run: govulncheck ./...
+    gotest:
+      glob: "*.go"
+      run: go test -v ./...
