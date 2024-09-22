@@ -1,18 +1,25 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-// nolint: exhaustruct, gochecknoglobals
+var cfgFile string // nolint:gochecknoglobals // Required for cobra
+
+// nolint:exhaustruct,gochecknoglobals // Required for cobra
 var rootCmd = &cobra.Command{
 	Use:   "pr2otel",
-	Short: "Convert GitHub Pull Request to OpenTelemetry-compatible telemetry.",
-	Long: `Convert GitHub Pull Request to OpenTelemetry-compatible telemetry.
-
-[TODO] A longer description and some examples will be written here.`,
+	Short: "Convert Pull Request(s) to Trace.",
+	Long: `pr2trace is a CLI tool to convert Pull Request(s) to Trace.
+For example:
+  <TODO>`,
+	Run: func(_ *cobra.Command, _ []string) {
+		fmt.Println("Hello World!") // nolint:forbidigo // To be replaced with actual implementation
+	},
 }
 
 func Execute() {
@@ -22,7 +29,29 @@ func Execute() {
 	}
 }
 
+// nolint:gochecknoinits // Required for cobra
 func init() {
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pr2otel.yaml)")
-	rootCmd.Flags().StringP("pull-request-url", "p", "", "URL of the GitHub Pull Request")
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
+		"config file (default is ./.pr2otel.yaml)")
+
+	rootCmd.Flags().BoolP("enable-cli-otel", "", false,
+		"Enable OpenTelemetry instrumentation for CLI commands")
+}
+
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		viper.AddConfigPath(".")
+		viper.SetConfigType("yaml")
+		viper.SetConfigName(".pr2otel")
+	}
+
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	}
 }
