@@ -12,7 +12,7 @@ var cfgFile string // nolint:gochecknoglobals // Required for cobra
 
 // nolint:exhaustruct,gochecknoglobals // Required for cobra
 var rootCmd = &cobra.Command{
-	Use:   "pr2otel",
+	Use:   "pr2trace",
 	Short: "Convert Pull Request(s) to Trace.",
 	Long: `pr2trace is a CLI tool to convert Pull Request(s) to Trace.
 For example:
@@ -34,7 +34,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
-		"config file (default is ./.pr2otel.yaml)")
+		"config file (default is ./.pr2trace.yaml)")
 
 	rootCmd.Flags().BoolP("enable-cli-otel", "", false,
 		"Enable OpenTelemetry instrumentation for CLI commands")
@@ -46,7 +46,7 @@ func initConfig() {
 	} else {
 		viper.AddConfigPath(".")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".pr2otel")
+		viper.SetConfigName(".pr2trace")
 	}
 
 	viper.AutomaticEnv()

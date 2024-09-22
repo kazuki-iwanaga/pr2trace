@@ -1,5 +1,5 @@
 {
-    "name": "pr2otel devcontainer",
+    "name": "pr2trace devcontainer",
     "dockerComposeFile": "compose.yaml",
     "service": "devcontainer",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
