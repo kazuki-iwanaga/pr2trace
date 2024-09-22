@@ -44,7 +44,7 @@ brews:
       name: homebrew-tap
       token: "{{ .Env.PAT_HOMEBREW_TAP_REPO }}"
     homepage: "https://github.com/kazuki-iwanaga/pr2trace"
-    description: "pr2trace is a tool to convert Pull Request to OpenTelemetry-compatible telemetry."
+    description: "A CLI tool to convert Pull Request to OpenTelemetry-compatible telemetry."
     license: "MIT"
 
 # https://goreleaser.com/customization/docker/
