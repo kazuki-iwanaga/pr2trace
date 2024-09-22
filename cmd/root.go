@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 For example:
   <TODO>`,
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println("Hello, World!") // nolint:forbidigo // To be replaced with actual implementation
+		fmt.Println("Hello World!") // nolint:forbidigo // To be replaced with actual implementation
 	},
 }
 
