@@ -32,10 +32,6 @@ archives:
 
 changelog:
   sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
 
 # https://goreleaser.com/customization/homebrew/
 brews:
