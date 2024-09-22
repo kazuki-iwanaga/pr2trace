@@ -6,7 +6,7 @@ pre-commit:
       run: go mod tidy
     gofmt:
       glob: "*.go"
-      run: gofmt -s -w {staged_files} && goimports -w {staged_files}
+      run: go fmt ./... && golangci-lint run --enable-only gci --fix ./...
     govet:
       glob: "*.go"
       run: go vet ./...
