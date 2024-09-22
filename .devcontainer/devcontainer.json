@@ -2,5 +2,6 @@
     "name": "pr2otel devcontainer",
     "dockerComposeFile": "compose.yaml",
     "service": "devcontainer",
-    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "postCreateCommand": "lefthook install"
 }
