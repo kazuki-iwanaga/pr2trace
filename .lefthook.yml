@@ -4,9 +4,12 @@ pre-commit:
     1_gomodtidy:
       glob: "*.go"
       run: go mod tidy -diff
-    2_golint:
+    2_golangcilint:
       glob: "*.go"
       run: golangci-lint run ./...
+    3_govulncheck:
+      glob: "*.go"
+      run: govulncheck ./...
     3_gotest:
       glob: "*.go"
       run: go test -v ./...
