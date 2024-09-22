@@ -33,3 +33,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PAT_HOMEBREW_TAP_REPO: ${{ secrets.PAT_HOMEBREW_TAP_REPO }}
+          TARGET_IMAGE_NAME: ghcr.io/kazuki-iwanaga/pr2trace

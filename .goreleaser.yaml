@@ -47,20 +47,20 @@ brews:
 # https://goreleaser.com/cookbooks/multi-platform-docker-images/
 dockers:
   - image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:{{ .Tag }}-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}.{{ .Minor }}-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:latest-amd64"
     use: buildx
     dockerfile: .goreleaser.dockerfile
     build_flag_templates:
       - "--pull"
       - "--platform=linux/amd64"
   - image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-arm64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-arm64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-arm64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-arm64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:{{ .Tag }}-arm64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}-arm64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}.{{ .Minor }}-arm64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:latest-arm64"
     use: buildx
     dockerfile: .goreleaser.dockerfile
     build_flag_templates:
@@ -68,19 +68,19 @@ dockers:
       - "--platform=linux/arm64"
     goarch: "arm64"
 docker_manifests:
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}"
+  - name_template: "{{ .Env.TARGET_IMAGE_NAME }}:{{ .Tag }}"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:{{ .Tag }}-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:{{ .Tag }}-arm64"
+  - name_template: "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}-arm64"
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}-arm64"
+  - name_template: "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}.{{ .Minor }}"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:v{{ .Major }}.{{ .Minor }}-arm64"
-  - name_template: "ghcr.io/kazuki-iwanaga/pr2trace:latest"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}.{{ .Minor }}-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:v{{ .Major }}.{{ .Minor }}-arm64"
+  - name_template: "{{ .Env.TARGET_IMAGE_NAME }}:latest"
     image_templates:
-      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-amd64"
-      - "ghcr.io/kazuki-iwanaga/pr2trace:latest-arm64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:latest-amd64"
+      - "{{ .Env.TARGET_IMAGE_NAME }}:latest-arm64"
