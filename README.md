@@ -1,7 +1,18 @@
 > [!CAUTION]
 > This repository is not ready.
 
-# pr2trace
+<div align="center">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="./docs/logo-dark-mode.svg">
+        <source media="(prefers-color-scheme: light)" srcset="./docs/logo-white-mode.svg">
+        <img alt="pr2trace logo" src="./docs/logo-with-background.svg" width="256">
+    </picture>
+</div>
+
+<div align="center">
+    <h1>pr2trace</h1>
+</div>
+
 Convert a GitHub Pull Request to OpenTelemetry-compatible telemetry.
 
 # Install
