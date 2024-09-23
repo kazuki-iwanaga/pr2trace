@@ -9,7 +9,9 @@ type PRmetrySpanRepository struct {
 }
 
 func NewPRmetrySpanRepository() *PRmetrySpanRepository {
-	return &PRmetrySpanRepository{}
+	return &PRmetrySpanRepository{
+		collection: make([]*domain.PRmetrySpan, 0),
+	}
 }
 
 func (r *PRmetrySpanRepository) Save(span *domain.PRmetrySpan) (*domain.PRmetrySpan, error) {
