@@ -6,6 +6,7 @@ linters:
     - gomnd          # Deprecated
     - depguard
     - nolintlint
+    - nlreturn
 
 linters-settings:
   varnamelen:
