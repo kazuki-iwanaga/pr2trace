@@ -4,11 +4,13 @@ import (
 	"testing"
 
 	"github.com/kazuki-iwanaga/pr2trace/internal"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPullRequestEventName(t *testing.T) {
 	t.Parallel()
-	testcases := []struct { // nolint:wsl
+
+	testcases := []struct {
 		name     string
 		expected string
 	}{
@@ -23,10 +25,15 @@ func TestPullRequestEventName(t *testing.T) {
 	}
 
 	for _, tt := range testcases {
-		e := internal.NewPullRequestEvent(tt.name)
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-		if e.Name() != tt.expected {
-			t.Errorf("expected %q, got %q", tt.expected, e.Name())
-		}
+			e := internal.NewPullRequestEvent(tt.name)
+
+			actual := e.Name()
+			if e.Name() != tt.expected {
+				assert.Equal(t, tt.expected, actual)
+			}
+		})
 	}
 }

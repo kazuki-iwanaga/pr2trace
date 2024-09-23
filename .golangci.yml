@@ -6,3 +6,8 @@ linters:
     - gomnd          # Deprecated
     - depguard
     - nolintlint
+
+linters-settings:
+  varnamelen:
+    ignore-names:
+      - tt
