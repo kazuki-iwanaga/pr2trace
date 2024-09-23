@@ -7,6 +7,9 @@ linters:
     - depguard
     - nolintlint
     - nlreturn
+    - wrapcheck
+    - ireturn
+    - varnamelen
 
 linters-settings:
   varnamelen:

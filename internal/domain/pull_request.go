@@ -22,14 +22,16 @@ type PullRequest struct {
 }
 
 func NewPullRequest(
-	owner, repo string, number int, title string, events []*PullRequestEvent,
+	owner, repo string, number int, title string, createdAt time.Time, mergedAt time.Time, events []*PullRequestEvent,
 ) *PullRequest {
 	return &PullRequest{
-		owner:  owner,
-		repo:   repo,
-		number: number,
-		title:  title,
-		events: events,
+		owner:     owner,
+		repo:      repo,
+		number:    number,
+		title:     title,
+		createdAt: createdAt,
+		mergedAt:  mergedAt,
+		events:    events,
 	}
 }
 
