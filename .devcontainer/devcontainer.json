@@ -10,7 +10,6 @@
                 "golang.go"
             ],
             "settings": {
-                "files.autoSave": "afterDelay",
                 "go.lintOnSave": "file",
                 "go.lintTool": "golangci-lint",
                 "go.lintFlags": [

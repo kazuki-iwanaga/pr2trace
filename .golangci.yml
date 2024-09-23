@@ -6,3 +6,12 @@ linters:
     - gomnd          # Deprecated
     - depguard
     - nolintlint
+    - nlreturn
+    - wrapcheck
+    - ireturn
+    - varnamelen
+
+linters-settings:
+  varnamelen:
+    ignore-names:
+      - tt
