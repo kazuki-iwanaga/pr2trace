@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/kazuki-iwanaga/pr2trace/internal/domain"
@@ -29,6 +30,25 @@ type readyForReviewEvent struct {
 type timelineItem struct {
 	PullRequestCommit   pullRequestCommit   `graphql:"... on PullRequestCommit"`
 	ReadyForReviewEvent readyForReviewEvent `graphql:"... on ReadyForReviewEvent"`
+}
+
+var ErrUnknownTimelineItem = errors.New("unknown timeline item")
+
+func timelineItem2PullRequestEvent(item *timelineItem) (*domain.PullRequestEvent, error) {
+	switch {
+	case item.PullRequestCommit != pullRequestCommit{}: // nolint: exhaustruct // TODO
+		return domain.NewPullRequestEvent(
+			"PullRequestCommit",
+			item.PullRequestCommit.Commit.AuthoredDate,
+		), nil
+	case item.ReadyForReviewEvent != readyForReviewEvent{}: // nolint: exhaustruct // TODO
+		return domain.NewPullRequestEvent(
+			"ReadyForReview",
+			item.ReadyForReviewEvent.CreatedAt,
+		), nil
+	default:
+		return nil, ErrUnknownTimelineItem
+	}
 }
 
 func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is long because of GraphQL query.
@@ -78,29 +98,15 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 		variables["cursor"] = githubv4.NewString(q.Repository.PullRequest.TimelineItems.PageInfo.EndCursor)
 	}
 
-	var pullRequestEvents []*domain.PullRequestEvent
+	pullRequestEvents := make([]*domain.PullRequestEvent, 0, len(timelineItems))
 
 	for _, item := range timelineItems {
-		switch {
-		case item.PullRequestCommit != pullRequestCommit{}: // nolint: exhaustruct // TODO
-			pullRequestEvents = append(
-				pullRequestEvents,
-				domain.NewPullRequestEvent(
-					"PullRequestCommit",
-					item.PullRequestCommit.Commit.AuthoredDate,
-				),
-			)
-		case item.ReadyForReviewEvent != readyForReviewEvent{}: // nolint: exhaustruct // TODO
-			pullRequestEvents = append(
-				pullRequestEvents,
-				domain.NewPullRequestEvent(
-					"ReadyForReview",
-					item.ReadyForReviewEvent.CreatedAt,
-				),
-			)
-		default:
-			continue
+		event, err := timelineItem2PullRequestEvent(&item)
+		if err != nil {
+			return nil, err
 		}
+
+		pullRequestEvents = append(pullRequestEvents, event)
 	}
 
 	return domain.NewPullRequest(
