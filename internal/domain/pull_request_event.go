@@ -2,19 +2,29 @@ package domain
 
 import "time"
 
+type PullRequestEventType string
+
+const (
+	PullRequestEventTypeCommit  PullRequestEventType = "Commit"
+	PullRequestEventTypeOpen    PullRequestEventType = "Open"
+	PullRequestEventTypeReview  PullRequestEventType = "Review"
+	PullRequestEventTypeApprove PullRequestEventType = "Approve"
+	PullRequestEventTypeMerge   PullRequestEventType = "Merge"
+)
+
 type PullRequestEvent struct {
-	eventType string
+	eventType PullRequestEventType
 	timestamp time.Time
 }
 
-func NewPullRequestEvent(eventType string, timestamp time.Time) *PullRequestEvent {
+func NewPullRequestEvent(eventType PullRequestEventType, timestamp time.Time) *PullRequestEvent {
 	return &PullRequestEvent{
 		eventType: eventType,
 		timestamp: timestamp,
 	}
 }
 
-func (e *PullRequestEvent) Type() string {
+func (e *PullRequestEvent) Type() PullRequestEventType {
 	return e.eventType
 }
 

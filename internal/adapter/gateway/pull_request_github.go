@@ -38,12 +38,12 @@ func timelineItem2PullRequestEvent(item *timelineItem) (*domain.PullRequestEvent
 	switch {
 	case item.PullRequestCommit != pullRequestCommit{}: // nolint: exhaustruct // TODO
 		return domain.NewPullRequestEvent(
-			"PullRequestCommit",
+			domain.PullRequestEventTypeCommit,
 			item.PullRequestCommit.Commit.AuthoredDate,
 		), nil
 	case item.ReadyForReviewEvent != readyForReviewEvent{}: // nolint: exhaustruct // TODO
 		return domain.NewPullRequestEvent(
-			"ReadyForReview",
+			domain.PullRequestEventTypeOpen,
 			item.ReadyForReviewEvent.CreatedAt,
 		), nil
 	default:
