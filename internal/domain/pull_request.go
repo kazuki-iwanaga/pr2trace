@@ -1,9 +1,12 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
-type PullRequestRepository interface {
-	Fetch(ctx context.Context, owner string, repo string, number int) (*PullRequest, error)
+type PullRequestGateway interface {
+	Get(ctx context.Context, owner string, repo string, number int) (*PullRequest, error)
 }
 
 type PullRequest struct {
@@ -12,8 +15,10 @@ type PullRequest struct {
 	number int
 
 	title    string
-	openedAt string
-	mergedAt string
+	openedAt time.Time
+	mergedAt time.Time
+
+	events []*PullRequestEvent
 }
 
 func NewPullRequest(
@@ -22,8 +27,10 @@ func NewPullRequest(
 	number int,
 
 	title string,
-	openedAt string,
-	mergedAt string,
+	openedAt time.Time,
+	mergedAt time.Time,
+
+	events []*PullRequestEvent,
 ) *PullRequest {
 	return &PullRequest{
 		owner:  owner,
@@ -33,5 +40,7 @@ func NewPullRequest(
 		title:    title,
 		openedAt: openedAt,
 		mergedAt: mergedAt,
+
+		events: events,
 	}
 }
