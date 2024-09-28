@@ -6,10 +6,12 @@ import (
 )
 
 type IPullRequestRepository interface {
-	Get(ctx context.Context, owner, repo string, number int) (*PullRequest, error)
+	Fetch(ctx context.Context, owner, repo string, number int) (*PullRequest, error)
 }
 
 type PullRequest struct {
+	id string
+
 	owner  string
 	repo   string
 	number int
@@ -22,7 +24,17 @@ type PullRequest struct {
 }
 
 func NewPullRequest(
-	owner, repo string, number int, title string, createdAt time.Time, mergedAt time.Time, events []*PullRequestEvent,
+	id string,
+
+	owner string,
+	repo string,
+	number int,
+
+	title string,
+	createdAt time.Time,
+	mergedAt time.Time,
+
+	events []*PullRequestEvent,
 ) *PullRequest {
 	return &PullRequest{
 		owner:     owner,
@@ -33,16 +45,4 @@ func NewPullRequest(
 		mergedAt:  mergedAt,
 		events:    events,
 	}
-}
-
-func (pr *PullRequest) GetTitle() string {
-	return pr.title
-}
-
-func (pr *PullRequest) GetCreatedAt() time.Time {
-	return pr.createdAt
-}
-
-func (pr *PullRequest) GetMergedAt() time.Time {
-	return pr.mergedAt
 }

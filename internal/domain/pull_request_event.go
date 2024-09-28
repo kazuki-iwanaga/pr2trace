@@ -1,19 +1,27 @@
 package domain
 
 import (
-	"context"
 	"time"
 )
 
-type IPullRequestEventRepository interface {
-	GetAll(ctx context.Context, owner, repo string, number int) ([]*PullRequestEvent, error)
-}
+type PullRequestEventType string
+
+const (
+	FirstCommit  PullRequestEventType = "first_commit"
+	Opened       PullRequestEventType = "opened"
+	FirstReview  PullRequestEventType = "first_review"
+	LastApproval PullRequestEventType = "last_approval"
+	Merged       PullRequestEventType = "merged"
+)
 
 type PullRequestEvent struct {
-	kind      string
-	createdAt time.Time
+	eventType PullRequestEventType
+	timestamp time.Time
 }
 
-func NewPullRequestEvent(kind string, createdAt time.Time) *PullRequestEvent {
-	return &PullRequestEvent{kind: kind, createdAt: createdAt}
+func NewPullRequestEvent(eventType PullRequestEventType, timestamp time.Time) *PullRequestEvent {
+	return &PullRequestEvent{
+		eventType: eventType,
+		timestamp: timestamp,
+	}
 }
