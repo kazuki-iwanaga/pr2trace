@@ -4,12 +4,20 @@ import "time"
 
 type PullRequestEvent struct {
 	eventType string
-	createdAt time.Time
+	timestamp time.Time
 }
 
-func NewPullRequestEvent(eventType string, createdAt time.Time) *PullRequestEvent {
+func NewPullRequestEvent(eventType string, timestamp time.Time) *PullRequestEvent {
 	return &PullRequestEvent{
 		eventType: eventType,
-		createdAt: createdAt,
+		timestamp: timestamp,
 	}
+}
+
+func (e *PullRequestEvent) Type() string {
+	return e.eventType
+}
+
+func (e *PullRequestEvent) Timestamp() time.Time {
+	return e.timestamp
 }

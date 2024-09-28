@@ -16,6 +16,8 @@ func NewPullRequestGitHubGateway(client *githubv4.Client) *PullRequestGitHubGate
 	return &PullRequestGitHubGateway{client: client}
 }
 
+type PullRequestCommit struct{}
+
 func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is long because of GraphQL query.
 	ctx context.Context,
 	owner string,
@@ -26,33 +28,34 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 		"owner":  githubv4.String(owner),
 		"repo":   githubv4.String(repo),
 		"number": githubv4.Int(number), // nolint: gosec // Managed by githubv4 module.
+		"cursor": (*githubv4.String)(nil),
 	}
 
-	// nolint: unused // Will be used in the future.
 	type timelineItem struct {
-		typename          string `graphql:"__typename"`
-		pullRequestCommit struct {
-			authoredDate time.Time
+		PullRequestCommit struct {
+			Commit struct {
+				AuthoredDate time.Time
+			} `graphql:"commit"`
 		} `graphql:"... on PullRequestCommit"`
-		readyForReviewEvent struct {
-			createdAt time.Time
+		ReadyForReviewEvent struct {
+			CreatedAt time.Time `graphql:"createdAt"`
 		} `graphql:"... on ReadyForReviewEvent"`
 	}
 
 	var q struct {
-		repository struct {
-			pullRequest struct {
-				title     string
-				createdAt time.Time
-				mergedAt  time.Time
+		Repository struct {
+			PullRequest struct {
+				Title     string
+				CreatedAt time.Time
+				MergedAt  time.Time
 
-				timelineItems struct {
-					nodes    []timelineItem
-					pageInfo struct {
-						endCursor   githubv4.String
-						hasNextPage bool
+				TimelineItems struct {
+					Nodes    []timelineItem
+					PageInfo struct {
+						EndCursor   githubv4.String
+						HasNextPage bool
 					}
-				} `graphql:"timelineItems(first: 100, after: $commentsCursor, itemTypes: [PULL_REQUEST_COMMIT,READY_FOR_REVIEW_EVENT])"` // nolint: lll
+				} `graphql:"timelineItems(first: 100, after: $cursor, itemTypes: [PULL_REQUEST_COMMIT,READY_FOR_REVIEW_EVENT])"` // nolint: lll
 			} `graphql:"pullRequest(number: $number)"`
 		} `graphql:"repository(owner: $owner, name: $repo)"`
 	}
@@ -64,29 +67,37 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 			return nil, err
 		}
 
-		timelineItems = append(timelineItems, q.repository.pullRequest.timelineItems.nodes...)
+		timelineItems = append(timelineItems, q.Repository.PullRequest.TimelineItems.Nodes...)
 
-		if !q.repository.pullRequest.timelineItems.pageInfo.hasNextPage {
+		if !q.Repository.PullRequest.TimelineItems.PageInfo.HasNextPage {
 			break
 		}
 
-		variables["commentsCursor"] = githubv4.NewString(q.repository.pullRequest.timelineItems.pageInfo.endCursor)
+		variables["cursor"] = githubv4.NewString(q.Repository.PullRequest.TimelineItems.PageInfo.EndCursor)
 	}
 
 	var pullRequestEvents []*domain.PullRequestEvent
 
 	for _, item := range timelineItems {
-		switch item.typename {
-		case "PullRequestCommit":
+		switch {
+		case item.PullRequestCommit != (timelineItem{}.PullRequestCommit): // nolint: exhaustruct // TODO
 			pullRequestEvents = append(
 				pullRequestEvents,
-				domain.NewPullRequestEvent("PullRequestCommit", item.pullRequestCommit.authoredDate),
+				domain.NewPullRequestEvent(
+					"PullRequestCommit",
+					item.PullRequestCommit.Commit.AuthoredDate,
+				),
 			)
-		case "ReadyForReviewEvent":
+		case item.ReadyForReviewEvent != (timelineItem{}.ReadyForReviewEvent): // nolint: exhaustruct // TODO
 			pullRequestEvents = append(
 				pullRequestEvents,
-				domain.NewPullRequestEvent("ReadyForReviewEvent", item.readyForReviewEvent.createdAt),
+				domain.NewPullRequestEvent(
+					"ReadyForReview",
+					item.ReadyForReviewEvent.CreatedAt,
+				),
 			)
+		default:
+			continue
 		}
 	}
 
@@ -95,9 +106,9 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 		repo,
 		number,
 
-		q.repository.pullRequest.title,
-		q.repository.pullRequest.createdAt,
-		q.repository.pullRequest.mergedAt,
+		q.Repository.PullRequest.Title,
+		q.Repository.PullRequest.CreatedAt,
+		q.Repository.PullRequest.MergedAt,
 
 		pullRequestEvents,
 	), nil
