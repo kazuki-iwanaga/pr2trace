@@ -16,7 +16,20 @@ func NewPullRequestGitHubGateway(client *githubv4.Client) *PullRequestGitHubGate
 	return &PullRequestGitHubGateway{client: client}
 }
 
-type PullRequestCommit struct{}
+type pullRequestCommit struct {
+	Commit struct {
+		AuthoredDate time.Time
+	} `graphql:"commit"`
+}
+
+type readyForReviewEvent struct {
+	CreatedAt time.Time `graphql:"createdAt"`
+}
+
+type timelineItem struct {
+	PullRequestCommit   pullRequestCommit   `graphql:"... on PullRequestCommit"`
+	ReadyForReviewEvent readyForReviewEvent `graphql:"... on ReadyForReviewEvent"`
+}
 
 func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is long because of GraphQL query.
 	ctx context.Context,
@@ -29,17 +42,6 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 		"repo":   githubv4.String(repo),
 		"number": githubv4.Int(number), // nolint: gosec // Managed by githubv4 module.
 		"cursor": (*githubv4.String)(nil),
-	}
-
-	type timelineItem struct {
-		PullRequestCommit struct {
-			Commit struct {
-				AuthoredDate time.Time
-			} `graphql:"commit"`
-		} `graphql:"... on PullRequestCommit"`
-		ReadyForReviewEvent struct {
-			CreatedAt time.Time `graphql:"createdAt"`
-		} `graphql:"... on ReadyForReviewEvent"`
 	}
 
 	var q struct {
@@ -80,7 +82,7 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 
 	for _, item := range timelineItems {
 		switch {
-		case item.PullRequestCommit != (timelineItem{}.PullRequestCommit): // nolint: exhaustruct // TODO
+		case item.PullRequestCommit != pullRequestCommit{}: // nolint: exhaustruct // TODO
 			pullRequestEvents = append(
 				pullRequestEvents,
 				domain.NewPullRequestEvent(
@@ -88,7 +90,7 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 					item.PullRequestCommit.Commit.AuthoredDate,
 				),
 			)
-		case item.ReadyForReviewEvent != (timelineItem{}.ReadyForReviewEvent): // nolint: exhaustruct // TODO
+		case item.ReadyForReviewEvent != readyForReviewEvent{}: // nolint: exhaustruct // TODO
 			pullRequestEvents = append(
 				pullRequestEvents,
 				domain.NewPullRequestEvent(
