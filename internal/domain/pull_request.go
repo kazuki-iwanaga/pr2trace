@@ -10,8 +10,6 @@ type IPullRequestRepository interface {
 }
 
 type PullRequest struct {
-	id string
-
 	owner  string
 	repo   string
 	number int
@@ -24,8 +22,6 @@ type PullRequest struct {
 }
 
 func NewPullRequest(
-	id string,
-
 	owner string,
 	repo string,
 	number int,
