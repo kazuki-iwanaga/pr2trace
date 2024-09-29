@@ -17,34 +17,67 @@ func NewPullRequestGitHubGateway(client *githubv4.Client) *PullRequestGitHubGate
 	return &PullRequestGitHubGateway{client: client}
 }
 
-type pullRequestCommit struct {
-	Commit struct {
-		AuthoredDate time.Time
-	} `graphql:"commit"`
-}
+type (
+	pullRequestCommit struct {
+		Commit struct {
+			AuthoredDate time.Time
+		} `graphql:"commit"`
+	}
 
-type readyForReviewEvent struct {
-	CreatedAt time.Time `graphql:"createdAt"`
-}
+	readyForReviewEvent struct {
+		CreatedAt time.Time
+	}
 
-type timelineItem struct {
-	PullRequestCommit   pullRequestCommit   `graphql:"... on PullRequestCommit"`
-	ReadyForReviewEvent readyForReviewEvent `graphql:"... on ReadyForReviewEvent"`
-}
+	pullRequestReview struct {
+		CreatedAt time.Time
+		State     string // [PENDING, COMMENTED, APPROVED, CHANGES_REQUESTED, DISMISSED]
+	}
+
+	issueComment struct {
+		CreatedAt time.Time
+	}
+
+	timelineItem struct {
+		PullRequestCommit   pullRequestCommit   `graphql:"... on PullRequestCommit"`
+		ReadyForReviewEvent readyForReviewEvent `graphql:"... on ReadyForReviewEvent"`
+		PullRequestReview   pullRequestReview   `graphql:"... on PullRequestReview"`
+		IssueComment        issueComment        `graphql:"... on IssueComment"`
+	}
+)
 
 var ErrUnknownTimelineItem = errors.New("unknown timeline item")
 
 func timelineItem2PullRequestEvent(item *timelineItem) (*domain.PullRequestEvent, error) {
 	switch {
-	case item.PullRequestCommit != pullRequestCommit{}: // nolint: exhaustruct // TODO
+	case item.PullRequestCommit != pullRequestCommit{}: // nolint: exhaustruct
 		return domain.NewPullRequestEvent(
 			domain.PullRequestEventTypeCommit,
 			item.PullRequestCommit.Commit.AuthoredDate,
 		), nil
-	case item.ReadyForReviewEvent != readyForReviewEvent{}: // nolint: exhaustruct // TODO
+	case item.ReadyForReviewEvent != readyForReviewEvent{}: // nolint: exhaustruct
 		return domain.NewPullRequestEvent(
 			domain.PullRequestEventTypeOpen,
 			item.ReadyForReviewEvent.CreatedAt,
+		), nil
+	case item.PullRequestReview != pullRequestReview{}: // nolint: exhaustruct
+		switch item.PullRequestReview.State {
+		case "COMMENTED":
+			return domain.NewPullRequestEvent(
+				domain.PullRequestEventTypeReview,
+				item.PullRequestReview.CreatedAt,
+			), nil
+		case "APPROVED":
+			return domain.NewPullRequestEvent(
+				domain.PullRequestEventTypeApprove,
+				item.PullRequestReview.CreatedAt,
+			), nil
+		default:
+			return nil, ErrUnknownTimelineItem
+		}
+	case item.IssueComment != issueComment{}: // nolint: exhaustruct
+		return domain.NewPullRequestEvent(
+			domain.PullRequestEventTypeReview,
+			item.IssueComment.CreatedAt,
 		), nil
 	default:
 		return nil, ErrUnknownTimelineItem
@@ -77,7 +110,7 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 						EndCursor   githubv4.String
 						HasNextPage bool
 					}
-				} `graphql:"timelineItems(first: 100, after: $cursor, itemTypes: [PULL_REQUEST_COMMIT,READY_FOR_REVIEW_EVENT])"` // nolint: lll
+				} `graphql:"timelineItems(first: 100, after: $cursor, itemTypes: [PULL_REQUEST_COMMIT,READY_FOR_REVIEW_EVENT,ISSUE_COMMENT])"` // nolint: lll
 			} `graphql:"pullRequest(number: $number)"`
 		} `graphql:"repository(owner: $owner, name: $repo)"`
 	}
@@ -103,7 +136,7 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 	for _, item := range timelineItems {
 		event, err := timelineItem2PullRequestEvent(&item)
 		if err != nil {
-			return nil, err
+			continue
 		}
 
 		pullRequestEvents = append(pullRequestEvents, event)
