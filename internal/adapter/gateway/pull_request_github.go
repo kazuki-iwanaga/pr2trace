@@ -38,6 +38,7 @@ type (
 	}
 
 	timelineItem struct {
+		Typename            string              `graphql:"__typename"`
 		PullRequestCommit   pullRequestCommit   `graphql:"... on PullRequestCommit"`
 		ReadyForReviewEvent readyForReviewEvent `graphql:"... on ReadyForReviewEvent"`
 		PullRequestReview   pullRequestReview   `graphql:"... on PullRequestReview"`
@@ -48,18 +49,18 @@ type (
 var ErrUnknownTimelineItem = errors.New("unknown timeline item")
 
 func timelineItem2PullRequestEvent(item *timelineItem) (*domain.PullRequestEvent, error) {
-	switch {
-	case item.PullRequestCommit != pullRequestCommit{}: // nolint: exhaustruct
+	switch item.Typename {
+	case "PullRequestCommit":
 		return domain.NewPullRequestEvent(
 			domain.PullRequestEventTypeCommit,
 			item.PullRequestCommit.Commit.AuthoredDate,
 		), nil
-	case item.ReadyForReviewEvent != readyForReviewEvent{}: // nolint: exhaustruct
+	case "ReadyForReviewEvent":
 		return domain.NewPullRequestEvent(
 			domain.PullRequestEventTypeOpen,
 			item.ReadyForReviewEvent.CreatedAt,
 		), nil
-	case item.PullRequestReview != pullRequestReview{}: // nolint: exhaustruct
+	case "PullRequestReview":
 		switch item.PullRequestReview.State {
 		case "COMMENTED":
 			return domain.NewPullRequestEvent(
@@ -74,7 +75,7 @@ func timelineItem2PullRequestEvent(item *timelineItem) (*domain.PullRequestEvent
 		default:
 			return nil, ErrUnknownTimelineItem
 		}
-	case item.IssueComment != issueComment{}: // nolint: exhaustruct
+	case "IssueComment":
 		return domain.NewPullRequestEvent(
 			domain.PullRequestEventTypeReview,
 			item.IssueComment.CreatedAt,
@@ -110,7 +111,7 @@ func (r *PullRequestGitHubGateway) Get( // nolint: funlen // This function is lo
 						EndCursor   githubv4.String
 						HasNextPage bool
 					}
-				} `graphql:"timelineItems(first: 100, after: $cursor, itemTypes: [PULL_REQUEST_COMMIT,READY_FOR_REVIEW_EVENT,ISSUE_COMMENT])"` // nolint: lll
+				} `graphql:"timelineItems(first: 100, after: $cursor, itemTypes: [PULL_REQUEST_COMMIT, READY_FOR_REVIEW_EVENT, PULL_REQUEST_REVIEW, ISSUE_COMMENT])"` // nolint: lll
 			} `graphql:"pullRequest(number: $number)"`
 		} `graphql:"repository(owner: $owner, name: $repo)"`
 	}
