@@ -2,6 +2,9 @@ package domain
 
 import (
 	"context"
+	"errors"
+	"slices"
+	"sort"
 	"time"
 )
 
@@ -32,6 +35,10 @@ func NewPullRequest(
 
 	events []*PullRequestEvent,
 ) *PullRequest {
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].timestamp.Before(events[j].timestamp)
+	})
+
 	return &PullRequest{
 		owner:  owner,
 		repo:   repo,
@@ -43,4 +50,35 @@ func NewPullRequest(
 
 		events: events,
 	}
+}
+
+type PullRequestEventSelectMethod string
+
+const (
+	PullRequestEventSelectMethodFirst PullRequestEventSelectMethod = "First"
+	PullRequestEventSelectMethodLast  PullRequestEventSelectMethod = "Last"
+)
+
+var ErrPullRequestEventNotFound = errors.New("pull request event not found")
+
+func (p *PullRequest) SelectEvent(
+	eventType PullRequestEventType,
+	method PullRequestEventSelectMethod,
+) (*PullRequestEvent, error) {
+	switch method {
+	case PullRequestEventSelectMethodFirst:
+		for _, e := range p.events {
+			if e.Type() == eventType {
+				return e, nil
+			}
+		}
+	case PullRequestEventSelectMethodLast:
+		for _, e := range slices.Backward(p.events) {
+			if e.Type() == eventType {
+				return e, nil
+			}
+		}
+	}
+
+	return nil, ErrPullRequestEventNotFound
 }

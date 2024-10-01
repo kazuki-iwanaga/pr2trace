@@ -1,6 +1,8 @@
 module github.com/kazuki-iwanaga/pr2trace
 
-go 1.22.7
+go 1.23
+
+toolchain go1.23.1
 
 require (
 	github.com/shurcooL/githubv4 v0.0.0-20240727222349-48295856cce7
