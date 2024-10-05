@@ -82,11 +82,3 @@ func (p *PullRequest) SelectEvent(
 
 	return nil, ErrPullRequestEventNotFound
 }
-
-func (p *PullRequest) FirstCommit() (*PullRequestEvent, error) {
-	return p.SelectEvent(PullRequestEventTypeCommit, PullRequestEventSelectMethodFirst)
-}
-
-func (p *PullRequest) LastCommit() (*PullRequestEvent, error) {
-	return p.SelectEvent(PullRequestEventTypeCommit, PullRequestEventSelectMethodLast)
-}
