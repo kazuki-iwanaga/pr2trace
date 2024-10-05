@@ -10,7 +10,7 @@ func TestNewPullRequest(t *testing.T) {
 	type args struct {
 		id       PullRequestID
 		metadata PullRequestMetadata
-		events   []PullRequestEvent
+		events   []*PullRequestEvent
 	}
 
 	tests := []struct {
@@ -23,7 +23,7 @@ func TestNewPullRequest(t *testing.T) {
 			args: args{
 				id:       PullRequestID{owner: "owner", repo: "repo", number: 1},
 				metadata: PullRequestMetadata{title: "title"},
-				events: []PullRequestEvent{
+				events: []*PullRequestEvent{
 					{eventType: PullRequestEventTypeOpen, timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 					{eventType: PullRequestEventTypeMerge, timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)},
 				},
@@ -31,7 +31,7 @@ func TestNewPullRequest(t *testing.T) {
 			want: &PullRequest{
 				id:       PullRequestID{owner: "owner", repo: "repo", number: 1},
 				metadata: PullRequestMetadata{title: "title"},
-				events: []PullRequestEvent{
+				events: []*PullRequestEvent{
 					{eventType: PullRequestEventTypeOpen, timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 					{eventType: PullRequestEventTypeMerge, timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)},
 				},
@@ -52,7 +52,7 @@ func TestPullRequest_ID(t *testing.T) {
 	type fields struct {
 		id       PullRequestID
 		metadata PullRequestMetadata
-		events   []PullRequestEvent
+		events   []*PullRequestEvent
 	}
 
 	tests := []struct {
@@ -71,7 +71,7 @@ func TestPullRequest_ID(t *testing.T) {
 				metadata: PullRequestMetadata{
 					title: "title",
 				},
-				events: []PullRequestEvent{
+				events: []*PullRequestEvent{
 					{eventType: PullRequestEventTypeOpen, timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 					{eventType: PullRequestEventTypeMerge, timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)},
 				},
@@ -102,7 +102,7 @@ func TestPullRequest_Metadata(t *testing.T) {
 	type fields struct {
 		id       PullRequestID
 		metadata PullRequestMetadata
-		events   []PullRequestEvent
+		events   []*PullRequestEvent
 	}
 
 	tests := []struct {
@@ -121,7 +121,7 @@ func TestPullRequest_Metadata(t *testing.T) {
 				metadata: PullRequestMetadata{
 					title: "title",
 				},
-				events: []PullRequestEvent{
+				events: []*PullRequestEvent{
 					{eventType: PullRequestEventTypeOpen, timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 					{eventType: PullRequestEventTypeMerge, timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)},
 				},
@@ -150,13 +150,13 @@ func TestPullRequest_Events(t *testing.T) {
 	type fields struct {
 		id       PullRequestID
 		metadata PullRequestMetadata
-		events   []PullRequestEvent
+		events   []*PullRequestEvent
 	}
 
 	tests := []struct {
 		name   string
 		fields fields
-		want   []PullRequestEvent
+		want   []*PullRequestEvent
 	}{
 		{
 			name: "PullRequest_Events",
@@ -169,12 +169,12 @@ func TestPullRequest_Events(t *testing.T) {
 				metadata: PullRequestMetadata{
 					title: "title",
 				},
-				events: []PullRequestEvent{
+				events: []*PullRequestEvent{
 					{eventType: PullRequestEventTypeOpen, timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 					{eventType: PullRequestEventTypeMerge, timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)},
 				},
 			},
-			want: []PullRequestEvent{
+			want: []*PullRequestEvent{
 				{eventType: PullRequestEventTypeOpen, timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{eventType: PullRequestEventTypeMerge, timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)},
 			},
