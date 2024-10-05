@@ -195,7 +195,7 @@ func TestPullRequest_Events(t *testing.T) {
 	}
 }
 
-func TestPullRequest_SelectPullRequestEvent(t *testing.T) { // nolint: funlen
+func TestPullRequest_SelectEvent(t *testing.T) { // nolint: funlen
 	type fields struct {
 		id       PullRequestID
 		metadata PullRequestMetadata
@@ -227,7 +227,7 @@ func TestPullRequest_SelectPullRequestEvent(t *testing.T) { // nolint: funlen
 		wantErr bool
 	}{
 		{
-			name:   "PullRequest_SelectPullRequestEvent_First_Success",
+			name:   "PullRequest_SelectEvent_First_Success",
 			fields: commonFields,
 			args: args{
 				eventType: PullRequestEventTypeCommit,
@@ -240,7 +240,7 @@ func TestPullRequest_SelectPullRequestEvent(t *testing.T) { // nolint: funlen
 			wantErr: false,
 		},
 		{
-			name:   "PullRequest_SelectPullRequestEvent_Last_Success",
+			name:   "PullRequest_SelectEvent_Last_Success",
 			fields: commonFields,
 			args: args{
 				eventType: PullRequestEventTypeCommit,
@@ -253,7 +253,7 @@ func TestPullRequest_SelectPullRequestEvent(t *testing.T) { // nolint: funlen
 			wantErr: false,
 		},
 		{
-			name:   "PullRequest_SelectPullRequestEvent_NotFoundErr",
+			name:   "PullRequest_SelectEvent_NotFoundErr",
 			fields: commonFields,
 			args: args{
 				eventType: PullRequestEventTypeApprove,
@@ -271,15 +271,15 @@ func TestPullRequest_SelectPullRequestEvent(t *testing.T) { // nolint: funlen
 				metadata: tt.fields.metadata,
 				events:   tt.fields.events,
 			}
-			got, err := pr.SelectPullRequestEvent(tt.args.eventType, tt.args.method)
+			got, err := pr.SelectEvent(tt.args.eventType, tt.args.method)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("PullRequest.SelectPullRequestEvent() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("PullRequest.SelectEvent() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PullRequest.SelectPullRequestEvent() = %v, want %v", got, tt.want)
+				t.Errorf("PullRequest.SelectEvent() = %v, want %v", got, tt.want)
 			}
 		})
 	}

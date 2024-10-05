@@ -50,7 +50,7 @@ const (
 
 var ErrPullRequestEventNotFound = errors.New("no pull request events found")
 
-func (pr *PullRequest) SelectPullRequestEvent(
+func (pr *PullRequest) SelectEvent(
 	eventType PullRequestEventType,
 	method PullRequestEventSelectMethod,
 ) (*PullRequestEvent, error) {
