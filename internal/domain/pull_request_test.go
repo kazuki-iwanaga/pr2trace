@@ -194,3 +194,93 @@ func TestPullRequest_Events(t *testing.T) {
 		})
 	}
 }
+
+func TestPullRequest_SelectPullRequestEvent(t *testing.T) { // nolint: funlen
+	type fields struct {
+		id       PullRequestID
+		metadata PullRequestMetadata
+		events   []*PullRequestEvent
+	}
+
+	type args struct {
+		eventType PullRequestEventType
+		method    PullRequestEventSelectMethod
+	}
+
+	commonFields := fields{
+		id:       PullRequestID{owner: "owner", repo: "repo", number: 1},
+		metadata: PullRequestMetadata{title: "title"},
+		events: []*PullRequestEvent{
+			{eventType: PullRequestEventTypeCommit, timestamp: time.Date(2020, 12, 29, 0, 0, 0, 0, time.UTC)},
+			{eventType: PullRequestEventTypeCommit, timestamp: time.Date(2020, 12, 31, 0, 0, 0, 0, time.UTC)},
+			{eventType: PullRequestEventTypeOpen, timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
+			{eventType: PullRequestEventTypeCommit, timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)},
+			{eventType: PullRequestEventTypeMerge, timestamp: time.Date(2021, 1, 20, 0, 0, 0, 0, time.UTC)},
+		},
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *PullRequestEvent
+		wantErr bool
+	}{
+		{
+			name:   "PullRequest_SelectPullRequestEvent_First_Success",
+			fields: commonFields,
+			args: args{
+				eventType: PullRequestEventTypeCommit,
+				method:    PullRequestEventSelectMethodFirst,
+			},
+			want: &PullRequestEvent{
+				eventType: PullRequestEventTypeCommit,
+				timestamp: time.Date(2020, 12, 29, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name:   "PullRequest_SelectPullRequestEvent_Last_Success",
+			fields: commonFields,
+			args: args{
+				eventType: PullRequestEventTypeCommit,
+				method:    PullRequestEventSelectMethodLast,
+			},
+			want: &PullRequestEvent{
+				eventType: PullRequestEventTypeCommit,
+				timestamp: time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name:   "PullRequest_SelectPullRequestEvent_NotFoundErr",
+			fields: commonFields,
+			args: args{
+				eventType: PullRequestEventTypeApprove,
+				method:    PullRequestEventSelectMethodFirst,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pr := &PullRequest{
+				id:       tt.fields.id,
+				metadata: tt.fields.metadata,
+				events:   tt.fields.events,
+			}
+			got, err := pr.SelectPullRequestEvent(tt.args.eventType, tt.args.method)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PullRequest.SelectPullRequestEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PullRequest.SelectPullRequestEvent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
