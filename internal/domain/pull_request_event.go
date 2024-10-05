@@ -18,10 +18,7 @@ type PullRequestEvent struct {
 }
 
 func NewPullRequestEvent(eventType PullRequestEventType, timestamp time.Time) *PullRequestEvent {
-	return &PullRequestEvent{
-		eventType: eventType,
-		timestamp: timestamp,
-	}
+	return &PullRequestEvent{eventType, timestamp}
 }
 
 func (e *PullRequestEvent) EventType() PullRequestEventType {
