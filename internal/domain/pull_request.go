@@ -68,13 +68,13 @@ func (p *PullRequest) SelectEvent(
 	switch method {
 	case PullRequestEventSelectMethodFirst:
 		for _, e := range p.events {
-			if e.Type() == eventType {
+			if e.EventType() == eventType {
 				return e, nil
 			}
 		}
 	case PullRequestEventSelectMethodLast:
 		for _, e := range slices.Backward(p.events) {
-			if e.Type() == eventType {
+			if e.EventType() == eventType {
 				return e, nil
 			}
 		}

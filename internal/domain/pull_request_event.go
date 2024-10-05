@@ -24,7 +24,7 @@ func NewPullRequestEvent(eventType PullRequestEventType, timestamp time.Time) *P
 	}
 }
 
-func (e *PullRequestEvent) Type() PullRequestEventType {
+func (e *PullRequestEvent) EventType() PullRequestEventType {
 	return e.eventType
 }
 
