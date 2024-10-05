@@ -12,17 +12,29 @@ type PullRequestGateway interface {
 type PullRequest struct {
 	id       PullRequestID
 	metadata PullRequestMetadata
-	events   []*PullRequestEvent
+	events   []PullRequestEvent
 }
 
 func NewPullRequest(
 	id PullRequestID,
 	metadata PullRequestMetadata,
-	events []*PullRequestEvent,
+	events []PullRequestEvent,
 ) *PullRequest {
 	sort.Slice(events, func(i, j int) bool {
 		return events[i].timestamp.Before(events[j].timestamp)
 	})
 
 	return &PullRequest{id, metadata, events}
+}
+
+func (pr *PullRequest) ID() PullRequestID {
+	return pr.id
+}
+
+func (pr *PullRequest) Metadata() PullRequestMetadata {
+	return pr.metadata
+}
+
+func (pr *PullRequest) Events() []PullRequestEvent {
+	return pr.events
 }
