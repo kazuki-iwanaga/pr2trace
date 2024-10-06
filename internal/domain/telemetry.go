@@ -1,15 +1,13 @@
 package domain
 
-type TelemetryExporter[T Telemetry] interface {
-	Export(ts []*T) error
-}
+type TelemetryType string
+
+const (
+	TelemetryTypeSpan   TelemetryType = "Span"
+	TelemetryTypeMetric TelemetryType = "Metric"
+	TelemetryTypeLog    TelemetryType = "Log"
+)
 
 type Telemetry interface {
-	Span | Metric | Log
+	Type() TelemetryType
 }
-
-type Span struct{}
-
-type Metric struct{}
-
-type Log struct{}
