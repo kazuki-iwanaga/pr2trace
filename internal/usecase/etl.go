@@ -21,43 +21,72 @@ type (
 	}
 
 	// EtlOutput is an output data for ETL usecase.
-	EtlOutput struct{}
+	EtlOutput struct {
+		Result string
+	}
 
 	// EtlInteractor is an interactor for ETL usecase.
 	EtlInteractor struct {
-		prExtractor domain.PrExtractor
-		tlmExporter domain.TelemetryExporter
-		presenter   EtlPresenter
+		prExtractor   domain.PrExtractor
+		traceExporter domain.TraceExporter
+		presenter     EtlPresenter
 	}
 )
 
 // NewEtlInput creates a new EtlInteractor.
 func NewEtlInteractor(
 	prExtractor domain.PrExtractor,
-	tlmExporter domain.TelemetryExporter,
+	traceExporter domain.TraceExporter,
 	presenter EtlPresenter,
 ) *EtlInteractor {
 	return &EtlInteractor{
-		prExtractor: prExtractor,
-		tlmExporter: tlmExporter,
-		presenter:   presenter,
+		prExtractor:   prExtractor,
+		traceExporter: traceExporter,
+		presenter:     presenter,
 	}
 }
 
 func (i *EtlInteractor) Execute(input *EtlInput) (*EtlOutput, error) {
 	// Extract PRs
-	_, err := i.prExtractor.Search(input.Query)
+	prs, err := i.prExtractor.Search(input.Query)
 	if err != nil {
 		return nil, err
 	}
 
-	// Transform PRs to Telemetries
-	tlms := []*domain.Telemetry{}
+	// Transform PRs to Traces
+	prRootSpans := make([]*domain.Span, 0, len(prs))
 
-	// Export Telemetries
-	if err := i.tlmExporter.Export(tlms); err != nil {
-		return nil, err
+	for _, pr := range prs {
+		prRootSpan, err := domain.PrRootSpan("PrRootSpan", pr)
+		if err != nil {
+			return nil, err
+		}
+
+		// prRootSpan.AddChildTelemetry(foo)
+
+		prRootSpans = append(prRootSpans, prRootSpan)
 	}
 
-	return &EtlOutput{}, nil
+	if len(prs) == 1 {
+		trace := domain.NewTrace(prRootSpans[0])
+
+		// Export Traces
+		if err := i.traceExporter.Export(trace); err != nil {
+			return nil, err
+		}
+	} else {
+		multiPrRootSpan, err := domain.MultiPrRootSpan("MultiPrRootSpan", prs)
+		if err != nil {
+			return nil, err
+		}
+
+		multiPrRootSpan.AddChildSpans(prRootSpans...)
+
+		trace := domain.NewTrace(multiPrRootSpan)
+		if err := i.traceExporter.Export(trace); err != nil {
+			return nil, err
+		}
+	}
+
+	return &EtlOutput{Result: "success"}, nil
 }

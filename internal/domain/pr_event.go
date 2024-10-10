@@ -2,20 +2,19 @@ package domain
 
 import "time"
 
-type (
-	PrEventType string
+// PrEvent is a domain model for PR event.
+// 1 PR has multiple events.
+type PrEvent struct {
+	// eventType is a type of PR event.
+	// Allowing values are PrEventTypeCommitted, PrEventTypeOpened,
+	// PrEventTypeReviewed, PrEventTypeAproved, and PrEventTypeMerged.
+	eventType PrEventType
 
-	PrEvent struct {
-		eventType PrEventType
-		createdAt time.Time
-	}
-)
+	// createdAt is a time when the event was created.
+	createdAt time.Time
+}
 
-const (
-	PrEventOpened PrEventType = "Opened"
-	PrEventClosed PrEventType = "Closed"
-)
-
+// NewPrEvent creates a new PrEvent.
 func NewPrEvent(eventType PrEventType, createdAt time.Time) *PrEvent {
 	return &PrEvent{
 		eventType: eventType,
@@ -23,10 +22,12 @@ func NewPrEvent(eventType PrEventType, createdAt time.Time) *PrEvent {
 	}
 }
 
+// EventType returns the event type.
 func (e *PrEvent) EventType() PrEventType {
 	return e.eventType
 }
 
+// CreatedAt returns the created time.
 func (e *PrEvent) CreatedAt() time.Time {
 	return e.createdAt
 }
