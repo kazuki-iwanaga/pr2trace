@@ -17,13 +17,11 @@ type (
 
 	// EtlPresenter is an output port for ETL usecase.
 	EtlPresenter interface {
-		Output(o *EtlOutput) EtlOutput
+		Output() *EtlOutput
 	}
 
 	// EtlOutput is an output data for ETL usecase.
-	EtlOutput struct {
-		Result string
-	}
+	EtlOutput struct{}
 
 	// EtlInteractor is an interactor for ETL usecase.
 	EtlInteractor struct {
@@ -88,5 +86,5 @@ func (i *EtlInteractor) Execute(input *EtlInput) (*EtlOutput, error) {
 		}
 	}
 
-	return &EtlOutput{Result: "success"}, nil
+	return i.presenter.Output(), nil
 }

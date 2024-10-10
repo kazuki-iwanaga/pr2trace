@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kazuki-iwanaga/pr2trace/internal/adapter"
+	"github.com/kazuki-iwanaga/pr2trace/internal/usecase"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,6 +21,18 @@ For example:
   <TODO>`,
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println("Hello World!") // nolint:forbidigo // To be replaced with actual implementation
+
+		query := viper.GetString("query")
+		fmt.Println("Query:", query) // nolint:forbidigo
+
+		prGhGateway := adapter.NewPrGhGateway()
+		traceOtelGateway := adapter.NewTraceOtelGateway()
+
+		presenter := adapter.NewEtlPresenter()
+		usecase := usecase.NewEtlInteractor(prGhGateway, traceOtelGateway, presenter)
+		controller := adapter.NewEtlController(usecase)
+
+		controller.Execute(query)
 	},
 }
 
@@ -38,6 +52,13 @@ func init() {
 
 	rootCmd.Flags().BoolP("enable-cli-otel", "", false,
 		"Enable OpenTelemetry instrumentation for CLI commands")
+
+	rootCmd.Flags().StringP("query", "q", "", "Query to search Pull Requests")
+
+	err := viper.BindPFlag("query", rootCmd.Flags().Lookup("query"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 func initConfig() {
