@@ -27,28 +27,28 @@ type (
 
 	// EtlInteractor is an interactor for ETL usecase.
 	EtlInteractor struct {
-		prExtractor   domain.PrExtractor
-		traceExporter domain.TraceExporter
-		presenter     EtlPresenter
+		prGateway    domain.PrGateway
+		traceGateway domain.TraceGateway
+		presenter    EtlPresenter
 	}
 )
 
 // NewEtlInput creates a new EtlInteractor.
 func NewEtlInteractor(
-	prExtractor domain.PrExtractor,
-	traceExporter domain.TraceExporter,
+	prGateway domain.PrGateway,
+	traceGateway domain.TraceGateway,
 	presenter EtlPresenter,
 ) *EtlInteractor {
 	return &EtlInteractor{
-		prExtractor:   prExtractor,
-		traceExporter: traceExporter,
-		presenter:     presenter,
+		prGateway:    prGateway,
+		traceGateway: traceGateway,
+		presenter:    presenter,
 	}
 }
 
 func (i *EtlInteractor) Execute(input *EtlInput) (*EtlOutput, error) {
 	// Extract PRs
-	prs, err := i.prExtractor.Search(input.Query)
+	prs, err := i.prGateway.Search(input.Query)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (i *EtlInteractor) Execute(input *EtlInput) (*EtlOutput, error) {
 		trace := domain.NewTrace(prRootSpans[0])
 
 		// Export Traces
-		if err := i.traceExporter.Export(trace); err != nil {
+		if err := i.traceGateway.Export(trace); err != nil {
 			return nil, err
 		}
 	} else {
@@ -83,7 +83,7 @@ func (i *EtlInteractor) Execute(input *EtlInput) (*EtlOutput, error) {
 		multiPrRootSpan.AddChildSpans(prRootSpans...)
 
 		trace := domain.NewTrace(multiPrRootSpan)
-		if err := i.traceExporter.Export(trace); err != nil {
+		if err := i.traceGateway.Export(trace); err != nil {
 			return nil, err
 		}
 	}

@@ -8,6 +8,6 @@ const (
 	PrEventTypeCommitted PrEventType = "Committed"
 	PrEventTypeOpened    PrEventType = "Opened"
 	PrEventTypeReviewed  PrEventType = "Reviewed"
-	PrEventTypeAproved   PrEventType = "Approved"
+	PrEventTypeApproved  PrEventType = "Approved"
 	PrEventTypeMerged    PrEventType = "Merged"
 )
